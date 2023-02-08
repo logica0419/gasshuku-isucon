@@ -9,14 +9,19 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"sync"
 
 	"github.com/labstack/echo/v4"
 )
 
 const qrCodeFileName = "../images/qr.png"
 
-var block cipher.Block
+var (
+	block      cipher.Block
+	qrFileLock sync.Mutex
+)
 
+// AES + CTRモード + base64エンコードでテキストを暗号化
 func encrypt(plainText string) (string, error) {
 	cipherText := make([]byte, aes.BlockSize+len([]byte(plainText)))
 	iv := cipherText[:aes.BlockSize]
@@ -28,6 +33,7 @@ func encrypt(plainText string) (string, error) {
 	return base64.StdEncoding.EncodeToString(cipherText), nil
 }
 
+// AES + CTRモード + base64エンコードで暗号化されたテキストを複合
 func decrypt(cipherText string) (string, error) {
 	cipherByte, err := base64.StdEncoding.DecodeString(cipherText)
 	if err != nil {
@@ -39,12 +45,20 @@ func decrypt(cipherText string) (string, error) {
 	return string(decryptedText), nil
 }
 
+// QRコードを生成
 func generateQRCode(id string) ([]byte, error) {
 	encryptedID, err := encrypt(id)
 	if err != nil {
 		return nil, err
 	}
 
+	/*
+		生成するQRコードの仕様
+		 - PNGフォーマット
+		 - QRコードの1モジュールは1ピクセルで表現
+		 - バージョン5 (37x37ピクセル、マージン含め45x45ピクセル)
+		 - エラー訂正レベルM (15%)
+	*/
 	_, err = exec.
 		Command("qrencode", "-o", qrCodeFileName, "-t", "PNG", "-s", "1", "-v", "5", "--strict-version", "-l", "M", encryptedID).
 		Output()
