@@ -87,11 +87,12 @@ const (
 
 // 蔵書取り寄せリクエスト
 type Order struct {
-	ID     string      `json:"id" db:"id"`
-	BookID string      `json:"book_id" db:"book_id"`
-	FromID string      `json:"from_id" db:"from_id"`
-	ToID   string      `json:"to_id" db:"to_id"`
-	Status OrderStatus `json:"status" db:"status"`
+	ID        string      `json:"id" db:"id"`
+	BookID    string      `json:"book_id" db:"book_id"`
+	FromID    string      `json:"from_id" db:"from_id"`
+	ToID      string      `json:"to_id" db:"to_id"`
+	Status    OrderStatus `json:"status" db:"status"`
+	CreatedAt time.Time   `json:"created_at" db:"created_at"`
 }
 
 // 貸出情報付き蔵書
