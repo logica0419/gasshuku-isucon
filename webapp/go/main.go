@@ -25,8 +25,8 @@ func generateID() string {
 type Library struct {
 	ID          string `json:"id" db:"id"`
 	Name        string `json:"name" db:"name"`
-	PhoneNumber string `json:"phone_number" db:"phone_number"`
 	Address     string `json:"address" db:"address"`
+	PhoneNumber string `json:"phone_number" db:"phone_number"`
 }
 
 // 会員
@@ -70,10 +70,28 @@ type Book struct {
 // 貸出記録
 type Lending struct {
 	ID        string    `json:"id" db:"id"`
-	UserID    string    `json:"user_id" db:"user_id"`
+	MemberID  string    `json:"member_id" db:"member_id"`
 	BookID    string    `json:"book_id" db:"book_id"`
-	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	Due       time.Time `json:"due" db:"due"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+}
+
+// 蔵書取り寄せリクエストの進行状況
+type OrderStatus int
+
+const (
+	Pending  OrderStatus = iota // 応答待ち
+	Accepted                    // 承諾
+	Canceled                    // 拒否
+)
+
+// 蔵書取り寄せリクエスト
+type Order struct {
+	ID     string      `json:"id" db:"id"`
+	BookID string      `json:"book_id" db:"book_id"`
+	FromID string      `json:"from_id" db:"from_id"`
+	ToID   string      `json:"to_id" db:"to_id"`
+	Status OrderStatus `json:"status" db:"status"`
 }
 
 // 貸出情報付き蔵書
