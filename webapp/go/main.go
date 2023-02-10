@@ -76,23 +76,13 @@ type Lending struct {
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
-// 蔵書取り寄せリクエストの進行状況
-type OrderStatus int
-
-const (
-	Pending  OrderStatus = iota // 応答待ち
-	Accepted                    // 承諾
-	Canceled                    // 拒否
-)
-
 // 蔵書取り寄せリクエスト
 type Order struct {
-	ID        string      `json:"id" db:"id"`
-	BookID    string      `json:"book_id" db:"book_id"`
-	FromID    string      `json:"from_id" db:"from_id"`
-	ToID      string      `json:"to_id" db:"to_id"`
-	Status    OrderStatus `json:"status" db:"status"`
-	CreatedAt time.Time   `json:"created_at" db:"created_at"`
+	ID        string    `json:"id" db:"id"`
+	BookID    string    `json:"book_id" db:"book_id"`
+	FromID    string    `json:"from_id" db:"from_id"`
+	ToID      string    `json:"to_id" db:"to_id"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
 // 貸出情報付き蔵書
