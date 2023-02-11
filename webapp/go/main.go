@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"sync"
@@ -16,6 +17,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/oklog/ulid/v2"
 )
 
@@ -197,10 +199,28 @@ func main() {
 	}
 
 	e := echo.New()
+	e.Debug = true
+	e.Use(middleware.Logger())
 
-	e.GET("/", func(c echo.Context) error {
-		return c.String(200, "Hello World!")
-	})
+	api := e.Group("/api")
+	api.Use(setLibraryMiddleware)
 
 	e.Logger.Fatal(e.Start(":8080"))
+}
+
+func setLibraryMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		cryptLibraryID := c.Request().Header.Get("X-Isulibrary-ID")
+		if cryptLibraryID == "" {
+			return echo.NewHTTPError(http.StatusBadRequest, "header X-Isulibrary-ID is required")
+		}
+
+		libraryID, err := decrypt(cryptLibraryID)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "header X-Isulibrary-ID is invalid")
+		}
+
+		c.Set("library_id", libraryID)
+		return next(c)
+	}
 }
