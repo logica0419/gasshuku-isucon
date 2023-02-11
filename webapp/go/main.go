@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -12,6 +13,8 @@ import (
 	"sync"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"
 )
@@ -96,6 +99,17 @@ type BookWithLend struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+var db *sqlx.DB
+
+func getEnvOrDefault(key string, defaultValue string) string {
+	val := os.Getenv(key)
+	if val != "" {
+		return val
+	}
+
+	return defaultValue
+}
+
 var (
 	block      cipher.Block
 	qrFileLock sync.Mutex
@@ -158,11 +172,26 @@ func generateQRCode(id string) ([]byte, error) {
 }
 
 func main() {
-	key := []byte("1234567890123456")
+	host := getEnvOrDefault("DB_HOST", "127.0.0.1")
+	port := getEnvOrDefault("DB_PORT", "3306")
+	user := getEnvOrDefault("DB_USER", "isucon")
+	pass := getEnvOrDefault("DB_PASS", "isucon")
+	name := getEnvOrDefault("DB_NAME", "isulibrary")
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&loc=Asia%%2FTokyo", user, pass, host, port, name)
 
 	var err error
+	db, err = sqlx.Open("mysql", dsn)
+	if err != nil {
+		log.Panic(err)
+	}
 
-	block, err = aes.NewCipher(key)
+	var key string
+	err = db.Get(&key, "SELECT `key` FROM `key` WHERE `id` = 1")
+	if err != nil {
+		log.Panic(err)
+	}
+
+	block, err = aes.NewCipher([]byte(key))
 	if err != nil {
 		log.Panic(err)
 	}
