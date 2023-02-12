@@ -202,6 +202,8 @@ func main() {
 	e.Debug = true
 	e.Use(middleware.Logger())
 
+	e.POST("/initialize", initializeHandler)
+
 	api := e.Group("/api")
 	api.Use(setLibraryMiddleware)
 
@@ -223,4 +225,35 @@ func setLibraryMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		c.Set("library_id", libraryID)
 		return next(c)
 	}
+}
+
+type InitializeHandlerRequest struct {
+	Key string `json:"key"`
+}
+
+type InitializeHandlerResponse struct {
+	Language string `json:"language"`
+}
+
+func initializeHandler(c echo.Context) error {
+	var req InitializeHandlerRequest
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	cmd := exec.Command("sh", "../sql/init_db.sh")
+	cmd.Env = os.Environ()
+	err := cmd.Run()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	_, err = db.Exec("INSERT INTO `key` (`key`) VALUES (?)", req.Key)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, InitializeHandlerResponse{
+		Language: "Go",
+	})
 }
