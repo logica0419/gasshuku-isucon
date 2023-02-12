@@ -210,6 +210,7 @@ func main() {
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
+// ライブラリIDを復号し、echo.Contextにセットするミドルウェア
 func setLibraryMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		cryptLibraryID := c.Request().Header.Get("X-Isulibrary-ID")
@@ -235,22 +236,27 @@ type InitializeHandlerResponse struct {
 	Language string `json:"language"`
 }
 
+// 初期化用ハンドラ
 func initializeHandler(c echo.Context) error {
 	var req InitializeHandlerRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	if len(req.Key) != 16 {
+		return echo.NewHTTPError(http.StatusBadRequest, "key must be 16 characters")
 	}
 
 	cmd := exec.Command("sh", "../sql/init_db.sh")
 	cmd.Env = os.Environ()
 	err := cmd.Run()
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
 	_, err = db.Exec("INSERT INTO `key` (`key`) VALUES (?)", req.Key)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
 	return c.JSON(http.StatusOK, InitializeHandlerResponse{
