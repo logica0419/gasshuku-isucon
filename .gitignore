@@ -1,3 +1,4 @@
 .vscode/
 go.work*
 notepad/
+.envrc
