@@ -195,6 +195,7 @@ func main() {
 			membersAPI.GET("", getMembersHandler)
 			membersAPI.GET("/:id", getMemberHandler)
 			membersAPI.PATCH("/:id", patchMemberHandler)
+			membersAPI.DELETE("/:id", banMemberHandler)
 			membersAPI.GET("/:id/qrcode", getMemberQRCodeHandler)
 		}
 	}
@@ -401,6 +402,31 @@ func patchMemberHandler(c echo.Context) error {
 	params = append(params, id)
 
 	_, err = db.Exec(query, params...)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.NoContent(http.StatusOK)
+}
+
+// 会員をBAN
+func banMemberHandler(c echo.Context) error {
+	id := c.Param("id")
+	if id == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "id is required")
+	}
+
+	// 会員の存在を確認
+	err := db.Get(&Member{}, "SELECT * FROM `member` WHERE `id` = ?", id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusNotFound, err.Error())
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	_, err = db.Exec("UPDATE `member` SET `banned` = true WHERE `id` = ?", id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
