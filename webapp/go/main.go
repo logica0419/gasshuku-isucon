@@ -4,7 +4,9 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"database/sql"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -190,6 +192,7 @@ func main() {
 		membersAPI := api.Group("/members")
 		{
 			membersAPI.GET("", getMembersHandler)
+			membersAPI.GET("/:encrypted_id", getMemberHandler)
 		}
 	}
 
@@ -276,4 +279,32 @@ func getMembersHandler(c echo.Context) error {
 		Members: members,
 		Total:   total,
 	})
+}
+
+func getMemberHandler(c echo.Context) error {
+	id := c.Param("id")
+	if id == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, errors.New("id is required"))
+	}
+
+	encrypted := c.QueryParam("encrypted")
+	if encrypted != "" {
+		var err error
+		id, err = decrypt(id)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err)
+		}
+	}
+
+	member := Member{}
+	err := db.Get(&member, "SELECT * FROM `members` WHERE `id` = ?", id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusNotFound, err)
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, member)
 }
