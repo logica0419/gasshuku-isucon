@@ -6,6 +6,10 @@ dump-schema:
 dump-data:
 	mysqldump isulibrary -t | grep -v "/\*" | grep -v "\-\-" | grep -v LOCK> webapp/sql/1_data.sql
 
+.PHONY: init-db
+init-db:
+	sh webapp/sql/init_db.sh
+
 .PHONY: run-go
 run-go:
 	cd webapp/go && go run *.go
