@@ -188,7 +188,7 @@ func main() {
 	}
 
 	var key string
-	err = db.Get(&key, "SELECT `key` FROM `key` WHERE `id` = 1")
+	err = db.Get(&key, "SELECT `key` FROM `key` WHERE `id` = (SELECT MAX(`id`) FROM `key`)")
 	if err != nil {
 		log.Panic(err)
 	}
@@ -257,6 +257,11 @@ func initializeHandler(c echo.Context) error {
 	_, err = db.Exec("INSERT INTO `key` (`key`) VALUES (?)", req.Key)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	block, err = aes.NewCipher([]byte(req.Key))
+	if err != nil {
+		log.Panic(err)
 	}
 
 	return c.JSON(http.StatusOK, InitializeHandlerResponse{
