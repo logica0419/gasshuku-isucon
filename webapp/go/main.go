@@ -4,9 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"database/sql"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -28,21 +26,12 @@ func generateID() string {
 	return ulid.Make().String()
 }
 
-// 図書館
-type Library struct {
-	ID          string `json:"id" db:"id"`
-	Name        string `json:"name" db:"name"`
-	Address     string `json:"address" db:"address"`
-	PhoneNumber string `json:"phone_number" db:"phone_number"`
-}
-
 // 会員
 type Member struct {
 	ID          string    `json:"id" db:"id"`
 	Name        string    `json:"name" db:"name"`
 	Address     string    `json:"address" db:"address"`
 	PhoneNumber string    `json:"phoneNumber" db:"phone_number"`
-	LibraryID   string    `json:"libraryId" db:"library_id"`
 	Banned      bool      `json:"banned" db:"banned"`
 	CreatedAt   time.Time `json:"created_at" db:"created_at"`
 }
@@ -70,7 +59,6 @@ type Book struct {
 	Title     string    `json:"title" db:"title"`
 	Author    string    `json:"author" db:"author"`
 	Genre     Genre     `json:"genre" db:"genre"`
-	LibraryID string    `json:"library_id" db:"library_id"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
@@ -83,15 +71,6 @@ type Lending struct {
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
-// 蔵書取り寄せリクエスト
-type Order struct {
-	ID        string    `json:"id" db:"id"`
-	BookID    string    `json:"book_id" db:"book_id"`
-	FromID    string    `json:"from_id" db:"from_id"`
-	ToID      string    `json:"to_id" db:"to_id"`
-	CreatedAt time.Time `json:"created_at" db:"created_at"`
-}
-
 // 貸出情報付き蔵書
 type BookWithLend struct {
 	ID        string    `json:"id"`
@@ -99,7 +78,6 @@ type BookWithLend struct {
 	Author    string    `json:"author"`
 	Genre     Genre     `json:"genre"`
 	Lending   bool      `json:"lending"`
-	LibraryID string    `json:"library_id"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
@@ -204,40 +182,12 @@ func main() {
 	e.Debug = true
 	e.Use(middleware.Logger())
 
-	api := e.Group("/api", setLibraryMiddleware)
+	api := e.Group("/api")
 	{
-		librariesAPI := api.Group("/libraries")
-		{
-			librariesAPI.GET("/:library_id", getLibraryHandler)
-		}
-
-	}
-
-	apiWithoutLibID := e.Group("/api")
-	{
-		apiWithoutLibID.POST("/initialize", initializeHandler)
-		apiWithoutLibID.GET("/libraries", getLibrariesHandler)
+		api.POST("/initialize", initializeHandler)
 	}
 
 	e.Logger.Fatal(e.Start(":8080"))
-}
-
-// ライブラリIDを復号し、echo.Contextにセットするミドルウェア
-func setLibraryMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		cryptLibraryID := c.Request().Header.Get("X-Isulibrary-ID")
-		if cryptLibraryID == "" {
-			return echo.NewHTTPError(http.StatusBadRequest, "header X-Isulibrary-ID is required")
-		}
-
-		libraryID, err := decrypt(cryptLibraryID)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "header X-Isulibrary-ID is invalid")
-		}
-
-		c.Set("library_id", libraryID)
-		return next(c)
-	}
 }
 
 type InitializeHandlerRequest struct {
@@ -279,56 +229,4 @@ func initializeHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, InitializeHandlerResponse{
 		Language: "Go",
 	})
-}
-
-type getLibrariesResponse struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	EncryptedID string `json:"encrypted_id"`
-}
-
-// 図書館一覧を取得するハンドラ
-// クライアントの初期化用で、ベンチマーキングには使用されない
-func getLibrariesHandler(c echo.Context) error {
-	libraries := make([]Library, 0)
-	err := db.Select(&libraries, "SELECT * FROM `library`")
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-
-	res := make([]getLibrariesResponse, len(libraries))
-	for i, library := range libraries {
-		encryptedID, err := encrypt(library.ID)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, err)
-		}
-
-		res[i] = getLibrariesResponse{
-			ID:          library.ID,
-			Name:        library.Name,
-			EncryptedID: encryptedID,
-		}
-	}
-
-	return c.JSON(http.StatusOK, res)
-}
-
-// 図書館情報を取得するハンドラ
-func getLibraryHandler(c echo.Context) error {
-	libraryID := c.Param("library_id")
-	if libraryID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "library_id is required")
-	}
-
-	library := Library{}
-	err := db.Get(&library, "SELECT * FROM `library` WHERE `id` = ?", libraryID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return echo.NewHTTPError(http.StatusNotFound, err)
-		}
-
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-
-	return c.JSON(http.StatusOK, library)
 }
