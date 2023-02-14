@@ -300,7 +300,7 @@ func getMembersHandler(c echo.Context) error {
 	_ = c.QueryParam("last_member_id")
 
 	members := []Member{}
-	err = db.Select(&members, "SELECT * FROM `member` ORDER BY `id` LIMIT ? OFFSET ?",
+	err = db.Select(&members, "SELECT * FROM `member` WHERE `banned` = false ORDER BY `id` LIMIT ? OFFSET ?",
 		memberPageLimit, (page-1)*memberPageLimit)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -340,7 +340,7 @@ func getMemberHandler(c echo.Context) error {
 	}
 
 	member := Member{}
-	err := db.Get(&member, "SELECT * FROM `member` WHERE `id` = ?", id)
+	err := db.Get(&member, "SELECT * FROM `member` WHERE `id` = ? AND `banned` = false", id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, err.Error())
@@ -385,7 +385,7 @@ func patchMemberHandler(c echo.Context) error {
 	}
 
 	// 会員の存在を確認
-	err := db.Get(&Member{}, "SELECT * FROM `member` WHERE `id` = ?", id)
+	err := db.Get(&Member{}, "SELECT * FROM `member` WHERE `id` = ? AND `banned` = false", id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, err.Error())
@@ -428,7 +428,7 @@ func banMemberHandler(c echo.Context) error {
 	}
 
 	// 会員の存在を確認
-	err := db.Get(&Member{}, "SELECT * FROM `member` WHERE `id` = ?", id)
+	err := db.Get(&Member{}, "SELECT * FROM `member` WHERE `id` = ? AND `banned` = false", id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, err.Error())
@@ -453,7 +453,7 @@ func getMemberQRCodeHandler(c echo.Context) error {
 	}
 
 	// 会員の存在確認
-	err := db.Get(&Member{}, "SELECT * FROM `member` WHERE `id` = ?", id)
+	err := db.Get(&Member{}, "SELECT * FROM `member` WHERE `id` = ? AND `banned` = false", id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, err.Error())
