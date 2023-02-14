@@ -191,6 +191,7 @@ func main() {
 
 		membersAPI := api.Group("/members")
 		{
+			membersAPI.POST("", postMemberHandler)
 			membersAPI.GET("", getMembersHandler)
 			membersAPI.GET("/:encrypted_id", getMemberHandler)
 		}
@@ -240,9 +241,42 @@ func initializeHandler(c echo.Context) error {
 	})
 }
 
+type PostMemberRequest struct {
+	Name        string `json:"name" db:"name"`
+	Address     string `json:"address" db:"address"`
+	PhoneNumber string `json:"phoneNumber" db:"phone_number"`
+}
+
+// 会員登録
+func postMemberHandler(c echo.Context) error {
+	var req PostMemberRequest
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+	if req.Name == "" || req.Address == "" || req.PhoneNumber == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "name, address, phoneNumber are required")
+	}
+
+	id := generateID()
+
+	_, err := db.Exec("INSERT INTO `members` (`name`, `address`, `phone_number`, `banned`, `created_at`) VALUES (?, ?, ?, false, ?))",
+		id, req.Name, req.Address, req.PhoneNumber, time.Now())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	var res Member
+	err = db.Get(&res, "SELECT * FROM `members` WHERE `id` = ?", id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
 const memberPageLimit = 500
 
-type getMembersResponse struct {
+type GetMembersResponse struct {
 	Members []Member `json:"members"`
 	Total   int      `json:"total"`
 }
@@ -275,7 +309,7 @@ func getMembersHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	return c.JSON(http.StatusOK, getMembersResponse{
+	return c.JSON(http.StatusOK, GetMembersResponse{
 		Members: members,
 		Total:   total,
 	})
