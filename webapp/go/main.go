@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strconv"
 	"sync"
 	"time"
 
@@ -185,6 +186,11 @@ func main() {
 	api := e.Group("/api")
 	{
 		api.POST("/initialize", initializeHandler)
+
+		membersAPI := api.Group("/members")
+		{
+			membersAPI.GET("", getMembersHandler)
+		}
 	}
 
 	e.Logger.Fatal(e.Start(":8080"))
@@ -228,5 +234,46 @@ func initializeHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, InitializeHandlerResponse{
 		Language: "Go",
+	})
+}
+
+const memberPageLimit = 500
+
+type getMembersResponse struct {
+	Members []Member `json:"members"`
+	Total   int      `json:"total"`
+}
+
+// 会員を取得 (ページネーションあり)
+func getMembersHandler(c echo.Context) error {
+	pageStr := c.QueryParam("page")
+	if pageStr == "" {
+		pageStr = "1"
+	}
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	// 前ページの最後の会員ID
+	// シーク法をフロントエンドでは実装したが、バックエンドは力尽きた
+	_ = c.QueryParam("last_member_id")
+
+	members := []Member{}
+	err = db.Select(&members, "SELECT * FROM `members` ORDER BY `id` LIMIT ? OFFSET ?",
+		memberPageLimit, (page-1)*memberPageLimit)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	var total int
+	err = db.Get(&total, "SELECT COUNT(*) FROM `members`")
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, getMembersResponse{
+		Members: members,
+		Total:   total,
 	})
 }
