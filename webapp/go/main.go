@@ -4,7 +4,9 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"database/sql"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -202,10 +204,20 @@ func main() {
 	e.Debug = true
 	e.Use(middleware.Logger())
 
-	e.POST("/initialize", initializeHandler)
+	api := e.Group("/api", setLibraryMiddleware)
+	{
+		librariesAPI := api.Group("/libraries")
+		{
+			librariesAPI.GET("/:library_id", getLibraryHandler)
+		}
 
-	api := e.Group("/api")
-	api.Use(setLibraryMiddleware)
+	}
+
+	apiWithoutLibID := e.Group("/api")
+	{
+		apiWithoutLibID.POST("/initialize", initializeHandler)
+		apiWithoutLibID.GET("/libraries", getLibrariesHandler)
+	}
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
@@ -267,4 +279,56 @@ func initializeHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, InitializeHandlerResponse{
 		Language: "Go",
 	})
+}
+
+type getLibrariesResponse struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	EncryptedID string `json:"encrypted_id"`
+}
+
+// 図書館一覧を取得するハンドラ
+// クライアントの初期化用で、ベンチマーキングには使用されない
+func getLibrariesHandler(c echo.Context) error {
+	libraries := make([]Library, 0)
+	err := db.Select(&libraries, "SELECT * FROM `library`")
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	res := make([]getLibrariesResponse, len(libraries))
+	for i, library := range libraries {
+		encryptedID, err := encrypt(library.ID)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err)
+		}
+
+		res[i] = getLibrariesResponse{
+			ID:          library.ID,
+			Name:        library.Name,
+			EncryptedID: encryptedID,
+		}
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// 図書館情報を取得するハンドラ
+func getLibraryHandler(c echo.Context) error {
+	libraryID := c.Param("library_id")
+	if libraryID == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "library_id is required")
+	}
+
+	library := Library{}
+	err := db.Get(&library, "SELECT * FROM `library` WHERE `id` = ?", libraryID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusNotFound, err)
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, library)
 }
