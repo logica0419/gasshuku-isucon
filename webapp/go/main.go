@@ -193,7 +193,8 @@ func main() {
 		{
 			membersAPI.POST("", postMemberHandler)
 			membersAPI.GET("", getMembersHandler)
-			membersAPI.GET("/:encrypted_id", getMemberHandler)
+			membersAPI.GET("/:id", getMemberHandler)
+			membersAPI.GET("/:id/qrcode", getMemberQRCodeHandler)
 		}
 	}
 
@@ -342,4 +343,32 @@ func getMemberHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, member)
+}
+
+// 会員証用のQRコードを取得
+func getMemberQRCodeHandler(c echo.Context) error {
+	id := c.Param("id")
+	if id == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, errors.New("id is required"))
+	}
+
+	// 会員の存在確認
+	err := db.Get(&Member{}, "SELECT * FROM `members` WHERE `id` = ?", id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusNotFound, err)
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	qrFileLock.Lock()
+	defer qrFileLock.Unlock()
+
+	qrCode, err := generateQRCode(id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.Blob(http.StatusOK, "image/png", qrCode)
 }
