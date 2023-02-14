@@ -34,7 +34,7 @@ type Member struct {
 	ID          string    `json:"id" db:"id"`
 	Name        string    `json:"name" db:"name"`
 	Address     string    `json:"address" db:"address"`
-	PhoneNumber string    `json:"phoneNumber" db:"phone_number"`
+	PhoneNumber string    `json:"phone_number" db:"phone_number"`
 	Banned      bool      `json:"banned" db:"banned"`
 	CreatedAt   time.Time `json:"created_at" db:"created_at"`
 }
@@ -213,7 +213,7 @@ type InitializeHandlerResponse struct {
 func initializeHandler(c echo.Context) error {
 	var req InitializeHandlerRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	if len(req.Key) != 16 {
@@ -224,17 +224,17 @@ func initializeHandler(c echo.Context) error {
 	cmd.Env = os.Environ()
 	err := cmd.Run()
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	_, err = db.Exec("INSERT INTO `key` (`key`) VALUES (?)", req.Key)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	block, err = aes.NewCipher([]byte(req.Key))
 	if err != nil {
-		log.Panic(err)
+		log.Panic(err.Error())
 	}
 
 	return c.JSON(http.StatusOK, InitializeHandlerResponse{
@@ -243,16 +243,16 @@ func initializeHandler(c echo.Context) error {
 }
 
 type PostMemberRequest struct {
-	Name        string `json:"name" db:"name"`
-	Address     string `json:"address" db:"address"`
-	PhoneNumber string `json:"phoneNumber" db:"phone_number"`
+	Name        string `json:"name"`
+	Address     string `json:"address"`
+	PhoneNumber string `json:"phone_number"`
 }
 
 // 会員登録
 func postMemberHandler(c echo.Context) error {
 	var req PostMemberRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	if req.Name == "" || req.Address == "" || req.PhoneNumber == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "name, address, phoneNumber are required")
@@ -260,16 +260,16 @@ func postMemberHandler(c echo.Context) error {
 
 	id := generateID()
 
-	_, err := db.Exec("INSERT INTO `members` (`name`, `address`, `phone_number`, `banned`, `created_at`) VALUES (?, ?, ?, false, ?))",
+	_, err := db.Exec("INSERT INTO `member` (`id`, `name`, `address`, `phone_number`, `banned`, `created_at`) VALUES (?, ?, ?, ?, false, ?)",
 		id, req.Name, req.Address, req.PhoneNumber, time.Now())
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	var res Member
-	err = db.Get(&res, "SELECT * FROM `members` WHERE `id` = ?", id)
+	err = db.Get(&res, "SELECT * FROM `member` WHERE `id` = ?", id)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	return c.JSON(http.StatusOK, res)
@@ -290,7 +290,7 @@ func getMembersHandler(c echo.Context) error {
 	}
 	page, err := strconv.Atoi(pageStr)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	// 前ページの最後の会員ID
@@ -298,16 +298,19 @@ func getMembersHandler(c echo.Context) error {
 	_ = c.QueryParam("last_member_id")
 
 	members := []Member{}
-	err = db.Select(&members, "SELECT * FROM `members` ORDER BY `id` LIMIT ? OFFSET ?",
+	err = db.Select(&members, "SELECT * FROM `member` ORDER BY `id` LIMIT ? OFFSET ?",
 		memberPageLimit, (page-1)*memberPageLimit)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	if len(members) == 0 {
+		return echo.NewHTTPError(http.StatusNotFound, "no members to show in this page")
 	}
 
 	var total int
-	err = db.Get(&total, "SELECT COUNT(*) FROM `members`")
+	err = db.Get(&total, "SELECT COUNT(*) FROM `member`")
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	return c.JSON(http.StatusOK, GetMembersResponse{
@@ -320,7 +323,7 @@ func getMembersHandler(c echo.Context) error {
 func getMemberHandler(c echo.Context) error {
 	id := c.Param("id")
 	if id == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, errors.New("id is required"))
+		return echo.NewHTTPError(http.StatusBadRequest, "id is required")
 	}
 
 	encrypted := c.QueryParam("encrypted")
@@ -328,18 +331,18 @@ func getMemberHandler(c echo.Context) error {
 		var err error
 		id, err = decrypt(id)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, err)
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
 	}
 
 	member := Member{}
-	err := db.Get(&member, "SELECT * FROM `members` WHERE `id` = ?", id)
+	err := db.Get(&member, "SELECT * FROM `member` WHERE `id` = ?", id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return echo.NewHTTPError(http.StatusNotFound, err)
+			return echo.NewHTTPError(http.StatusNotFound, err.Error())
 		}
 
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	return c.JSON(http.StatusOK, member)
@@ -349,17 +352,17 @@ func getMemberHandler(c echo.Context) error {
 func getMemberQRCodeHandler(c echo.Context) error {
 	id := c.Param("id")
 	if id == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, errors.New("id is required"))
+		return echo.NewHTTPError(http.StatusBadRequest, "id is required")
 	}
 
 	// 会員の存在確認
-	err := db.Get(&Member{}, "SELECT * FROM `members` WHERE `id` = ?", id)
+	err := db.Get(&Member{}, "SELECT * FROM `member` WHERE `id` = ?", id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return echo.NewHTTPError(http.StatusNotFound, err)
+			return echo.NewHTTPError(http.StatusNotFound, err.Error())
 		}
 
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	qrFileLock.Lock()
@@ -367,7 +370,7 @@ func getMemberQRCodeHandler(c echo.Context) error {
 
 	qrCode, err := generateQRCode(id)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	return c.Blob(http.StatusOK, "image/png", qrCode)
