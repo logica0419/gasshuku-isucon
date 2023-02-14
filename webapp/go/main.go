@@ -194,6 +194,7 @@ func main() {
 			membersAPI.POST("", postMemberHandler)
 			membersAPI.GET("", getMembersHandler)
 			membersAPI.GET("/:id", getMemberHandler)
+			membersAPI.PATCH("/:id", patchMemberHandler)
 			membersAPI.GET("/:id/qrcode", getMemberQRCodeHandler)
 		}
 	}
@@ -346,6 +347,63 @@ func getMemberHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, member)
+}
+
+type PatchMemberRequest struct {
+	Name        string `json:"name"`
+	Address     string `json:"address"`
+	PhoneNumber string `json:"phone_number"`
+}
+
+// 会員情報編集
+func patchMemberHandler(c echo.Context) error {
+	id := c.Param("id")
+	if id == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "id is required")
+	}
+
+	var req PatchMemberRequest
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if req.Name == "" && req.Address == "" && req.PhoneNumber == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "name, address or phoneNumber is required")
+	}
+
+	// 会員の存在を確認
+	err := db.Get(&Member{}, "SELECT * FROM `member` WHERE `id` = ?", id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusNotFound, err.Error())
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	query := "UPDATE `member` SET "
+	params := []any{}
+	if req.Name != "" {
+		query += "`name` = ?, "
+		params = append(params, req.Name)
+	}
+	if req.Address != "" {
+		query += "`address` = ?, "
+		params = append(params, req.Address)
+	}
+	if req.PhoneNumber != "" {
+		query += "`phone_number` = ?, "
+		params = append(params, req.PhoneNumber)
+	}
+	query = query[:len(query)-2] // 最後の", "を削除
+	query += " WHERE `id` = ?"
+	params = append(params, id)
+
+	_, err = db.Exec(query, params...)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.NoContent(http.StatusOK)
 }
 
 // 会員証用のQRコードを取得
