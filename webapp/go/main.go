@@ -328,12 +328,14 @@ func getMemberHandler(c echo.Context) error {
 	}
 
 	encrypted := c.QueryParam("encrypted")
-	if encrypted != "" {
+	if encrypted == "true" {
 		var err error
 		id, err = decrypt(id)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
+	} else if encrypted != "" && encrypted != "false" {
+		return echo.NewHTTPError(http.StatusBadRequest, "encrypted must be boolean value")
 	}
 
 	member := Member{}
