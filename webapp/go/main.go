@@ -365,6 +365,17 @@ func patchMemberHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "id is required")
 	}
 
+	encrypted := c.QueryParam("encrypted")
+	if encrypted == "true" {
+		var err error
+		id, err = decrypt(id)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+	} else if encrypted != "" && encrypted != "false" {
+		return echo.NewHTTPError(http.StatusBadRequest, "encrypted must be boolean value")
+	}
+
 	var req PatchMemberRequest
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
