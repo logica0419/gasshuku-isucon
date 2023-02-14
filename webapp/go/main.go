@@ -247,7 +247,7 @@ type getMembersResponse struct {
 	Total   int      `json:"total"`
 }
 
-// 会員を取得 (ページネーションあり)
+// 会員一覧を取得 (ページネーションあり)
 func getMembersHandler(c echo.Context) error {
 	pageStr := c.QueryParam("page")
 	if pageStr == "" {
@@ -281,6 +281,7 @@ func getMembersHandler(c echo.Context) error {
 	})
 }
 
+// 会員を取得
 func getMemberHandler(c echo.Context) error {
 	id := c.Param("id")
 	if id == "" {
