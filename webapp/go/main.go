@@ -198,6 +198,11 @@ func main() {
 			membersAPI.DELETE("/:id", banMemberHandler)
 			membersAPI.GET("/:id/qrcode", getMemberQRCodeHandler)
 		}
+
+		booksAPI:= api.Group("/books")
+		{
+			booksAPI.GET(":id", getBookHandler)
+		}
 	}
 
 	e.Logger.Fatal(e.Start(":8080"))
@@ -479,6 +484,37 @@ func getMemberQRCodeHandler(c echo.Context) error {
 Books API
 ---------------------------------------------------------------
 */
+
+// 蔵書を取得
+func getBookHandler(c echo.Context) error {
+	id := c.Param("id")
+	if id == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "id is required")
+	}
+
+	encrypted := c.QueryParam("encrypted")
+	if encrypted == "true" {
+		var err error
+		id, err = decrypt(id)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+	} else if encrypted != "" && encrypted != "false" {
+		return echo.NewHTTPError(http.StatusBadRequest, "encrypted must be boolean value")
+	}
+
+	book := Book{}
+	err := db.Get(&book, "SELECT * FROM `book` WHERE `id` = ?", id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusNotFound, err.Error())
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, book)
+}
 
 /*
 ---------------------------------------------------------------
