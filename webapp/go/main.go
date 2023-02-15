@@ -199,7 +199,7 @@ func main() {
 			membersAPI.GET("/:id/qrcode", getMemberQRCodeHandler)
 		}
 
-		booksAPI:= api.Group("/books")
+		booksAPI := api.Group("/books")
 		{
 			booksAPI.GET(":id", getBookHandler)
 		}
@@ -485,6 +485,11 @@ Books API
 ---------------------------------------------------------------
 */
 
+type GetBookResponse struct {
+	Book
+	Lending bool `json:"lending"`
+}
+
 // 蔵書を取得
 func getBookHandler(c echo.Context) error {
 	id := c.Param("id")
@@ -513,7 +518,19 @@ func getBookHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	return c.JSON(http.StatusOK, book)
+	res := GetBookResponse{
+		Book: book,
+	}
+	err = db.Get(&Lending{}, "SELECT * FROM `lending` WHERE `book_id` = ?", id)
+	if err == nil {
+		res.Lending = true
+	} else if errors.Is(err, sql.ErrNoRows) {
+		res.Lending = false
+	} else {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, res)
 }
 
 /*
