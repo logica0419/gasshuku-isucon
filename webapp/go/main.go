@@ -211,6 +211,12 @@ type InitializeHandlerResponse struct {
 	Language string `json:"language"`
 }
 
+/*
+---------------------------------------------------------------
+Initialization API
+---------------------------------------------------------------
+*/
+
 // 初期化用ハンドラ
 func initializeHandler(c echo.Context) error {
 	var req InitializeHandlerRequest
@@ -243,6 +249,12 @@ func initializeHandler(c echo.Context) error {
 		Language: "Go",
 	})
 }
+
+/*
+---------------------------------------------------------------
+Members API
+---------------------------------------------------------------
+*/
 
 type PostMemberRequest struct {
 	Name        string `json:"name"`
@@ -461,3 +473,15 @@ func getMemberQRCodeHandler(c echo.Context) error {
 
 	return c.Blob(http.StatusOK, "image/png", qrCode)
 }
+
+/*
+---------------------------------------------------------------
+Books API
+---------------------------------------------------------------
+*/
+
+/*
+---------------------------------------------------------------
+Lending API
+---------------------------------------------------------------
+*/
