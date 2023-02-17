@@ -243,7 +243,7 @@ func initializeHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	_, err = db.Exec("INSERT INTO `key` (`key`) VALUES (?)", req.Key)
+	_, err = db.ExecContext(c.Request().Context(), "INSERT INTO `key` (`key`) VALUES (?)", req.Key)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -282,17 +282,28 @@ func postMemberHandler(c echo.Context) error {
 
 	id := generateID()
 
-	_, err := db.Exec("INSERT INTO `member` (`id`, `name`, `address`, `phone_number`, `banned`, `created_at`) VALUES (?, ?, ?, ?, false, ?)",
+	tx, err := db.BeginTxx(c.Request().Context(), nil)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
+	_, err = tx.ExecContext(c.Request().Context(),
+		"INSERT INTO `member` (`id`, `name`, `address`, `phone_number`, `banned`, `created_at`) VALUES (?, ?, ?, ?, false, ?)",
 		id, req.Name, req.Address, req.PhoneNumber, time.Now())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	var res Member
-	err = db.Get(&res, "SELECT * FROM `member` WHERE `id` = ?", id)
+	err = tx.GetContext(c.Request().Context(), &res, "SELECT * FROM `member` WHERE `id` = ?", id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
+
+	_ = tx.Commit()
 
 	return c.JSON(http.StatusOK, res)
 }
@@ -319,9 +330,17 @@ func getMembersHandler(c echo.Context) error {
 	// シーク法をフロントエンドでは実装したが、バックエンドは力尽きた
 	_ = c.QueryParam("last_member_id")
 
+	tx, err := db.BeginTxx(c.Request().Context(), &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
 	members := []Member{}
-	err = db.Select(&members, "SELECT * FROM `member` WHERE `banned` = false ORDER BY `id` LIMIT ? OFFSET ?",
-		memberPageLimit, (page-1)*memberPageLimit)
+	err = tx.SelectContext(c.Request().Context(), &members,
+		"SELECT * FROM `member` WHERE `banned` = false LIMIT ? OFFSET ?", memberPageLimit, (page-1)*memberPageLimit)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -330,10 +349,12 @@ func getMembersHandler(c echo.Context) error {
 	}
 
 	var total int
-	err = db.Get(&total, "SELECT COUNT(*) FROM `member`")
+	err = tx.GetContext(c.Request().Context(), &total, "SELECT COUNT(*) FROM `member`")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
+
+	_ = tx.Commit()
 
 	return c.JSON(http.StatusOK, GetMembersResponse{
 		Members: members,
@@ -360,7 +381,7 @@ func getMemberHandler(c echo.Context) error {
 	}
 
 	member := Member{}
-	err := db.Get(&member, "SELECT * FROM `member` WHERE `id` = ? AND `banned` = false", id)
+	err := db.GetContext(c.Request().Context(), &member, "SELECT * FROM `member` WHERE `id` = ? AND `banned` = false", id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, err.Error())
@@ -393,8 +414,16 @@ func patchMemberHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "name, address or phoneNumber is required")
 	}
 
+	tx, err := db.BeginTxx(c.Request().Context(), nil)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
 	// 会員の存在を確認
-	err := db.Get(&Member{}, "SELECT * FROM `member` WHERE `id` = ? AND `banned` = false", id)
+	err = tx.GetContext(c.Request().Context(), &Member{}, "SELECT * FROM `member` WHERE `id` = ? AND `banned` = false", id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, err.Error())
@@ -421,10 +450,12 @@ func patchMemberHandler(c echo.Context) error {
 	query += " WHERE `id` = ?"
 	params = append(params, id)
 
-	_, err = db.Exec(query, params...)
+	_, err = tx.ExecContext(c.Request().Context(), query, params...)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
+
+	_ = tx.Commit()
 
 	return c.NoContent(http.StatusOK)
 }
@@ -436,8 +467,16 @@ func banMemberHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "id is required")
 	}
 
+	tx, err := db.BeginTxx(c.Request().Context(), nil)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
 	// 会員の存在を確認
-	err := db.Get(&Member{}, "SELECT * FROM `member` WHERE `id` = ? AND `banned` = false", id)
+	err = tx.GetContext(c.Request().Context(), &Member{}, "SELECT * FROM `member` WHERE `id` = ? AND `banned` = false", id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, err.Error())
@@ -446,10 +485,12 @@ func banMemberHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	_, err = db.Exec("UPDATE `member` SET `banned` = true WHERE `id` = ?", id)
+	_, err = tx.ExecContext(c.Request().Context(), "UPDATE `member` SET `banned` = true WHERE `id` = ?", id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
+
+	_ = tx.Commit()
 
 	return c.NoContent(http.StatusOK)
 }
@@ -462,7 +503,7 @@ func getMemberQRCodeHandler(c echo.Context) error {
 	}
 
 	// 会員の存在確認
-	err := db.Get(&Member{}, "SELECT * FROM `member` WHERE `id` = ? AND `banned` = false", id)
+	err := db.GetContext(c.Request().Context(), &Member{}, "SELECT * FROM `member` WHERE `id` = ? AND `banned` = false", id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, err.Error())
@@ -504,6 +545,14 @@ func postBookHandler(c echo.Context) error {
 	res := []Book{}
 	createdAt := time.Now()
 
+	tx, err := db.BeginTxx(c.Request().Context(), nil)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
 	for _, book := range req {
 		if book.Title == "" || book.Author == "" {
 			return echo.NewHTTPError(http.StatusBadRequest, "title, author is required")
@@ -514,20 +563,23 @@ func postBookHandler(c echo.Context) error {
 
 		id := generateID()
 
-		_, err := db.Exec("INSERT INTO `book` (`id`, `title`, `author`, `genre`, `created_at`) VALUES (?, ?, ?, ?, ?)",
+		_, err := tx.ExecContext(c.Request().Context(),
+			"INSERT INTO `book` (`id`, `title`, `author`, `genre`, `created_at`) VALUES (?, ?, ?, ?, ?)",
 			id, book.Title, book.Author, book.Genre, createdAt)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
 
 		var record Book
-		err = db.Get(&record, "SELECT * FROM `book` WHERE `id` = ?", id)
+		err = tx.GetContext(c.Request().Context(), &record, "SELECT * FROM `book` WHERE `id` = ?", id)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
 
 		res = append(res, record)
 	}
+
+	_ = tx.Commit()
 
 	return c.JSON(http.StatusCreated, res)
 }
@@ -555,8 +607,16 @@ func getBookHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "encrypted must be boolean value")
 	}
 
+	tx, err := db.BeginTxx(c.Request().Context(), &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
 	book := Book{}
-	err := db.Get(&book, "SELECT * FROM `book` WHERE `id` = ?", id)
+	err = tx.GetContext(c.Request().Context(), &book, "SELECT * FROM `book` WHERE `id` = ?", id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, err.Error())
@@ -568,7 +628,7 @@ func getBookHandler(c echo.Context) error {
 	res := GetBookResponse{
 		Book: book,
 	}
-	err = db.Get(&Lending{}, "SELECT * FROM `lending` WHERE `book_id` = ?", id)
+	err = tx.GetContext(c.Request().Context(), &Lending{}, "SELECT * FROM `lending` WHERE `book_id` = ?", id)
 	if err == nil {
 		res.Lending = true
 	} else if errors.Is(err, sql.ErrNoRows) {
@@ -576,6 +636,8 @@ func getBookHandler(c echo.Context) error {
 	} else {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
+
+	_ = tx.Commit()
 
 	return c.JSON(http.StatusOK, res)
 }
