@@ -80,7 +80,7 @@ func main() {
 		{
 			lendingsAPI.POST("", postLendingsHandler)
 			lendingsAPI.GET("", getLendingsHandler)
-			lendingsAPI.POST("/return", returnLendingHandler)
+			lendingsAPI.POST("/return", returnLendingsHandler)
 		}
 	}
 
@@ -953,7 +953,7 @@ type ReturnLendingsRequest struct {
 }
 
 // 蔵書を返却
-func returnLendingHandler(c echo.Context) error {
+func returnLendingsHandler(c echo.Context) error {
 	var req ReturnLendingsRequest
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
