@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"math/rand"
@@ -12,12 +12,12 @@ var (
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
-	InitializeCharCode()
-	InitializeCharCodeWithSign()
+	initializeCharCode()
+	initializeCharCodeWithSign()
 }
 
 // 英数字をリストに登録
-func InitializeCharCode() {
+func initializeCharCode() {
 	for i := '0'; i <= '9'; i++ {
 		codes = append(codes, i)
 	}
@@ -32,7 +32,7 @@ func InitializeCharCode() {
 // ", '. `, \ を覗く英数字と記号をリストに登録
 // ref: https://github.com/githayu/apps.hayu.io/blob/master/src/app/random/unicode-blocks.ts
 // (大本: https://ja.wikipedia.org/wiki/%E3%83%96%E3%83%AD%E3%83%83%E3%82%AF_(Unicode))
-func InitializeCharCodeWithSign() {
+func initializeCharCodeWithSign() {
 	for i := '0'; i <= '9'; i++ {
 		codesWithSign = append(codesWithSign, i)
 	}
@@ -62,7 +62,7 @@ func InitializeCharCodeWithSign() {
 }
 
 // 英数字のランダム文字列を生成
-func randString(n int) string {
+func RandString(n int) string {
 	b := make([]byte, n)
 	for i := range b {
 		b[i] = byte(codes[rand.Intn(len(codes))])
@@ -71,7 +71,7 @@ func randString(n int) string {
 }
 
 // 英数字と記号のランダム文字列を生成
-func randStringWithSign(n int) string {
+func RandStringWithSign(n int) string {
 	b := make([]byte, n)
 	for i := range b {
 		b[i] = byte(codesWithSign[rand.Intn(len(codesWithSign))])
