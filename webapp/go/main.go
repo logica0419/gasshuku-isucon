@@ -24,10 +24,64 @@ import (
 	"github.com/oklog/ulid/v2"
 )
 
-// ULIDを生成
-func generateID() string {
-	return ulid.Make().String()
+func main() {
+	host := getEnvOrDefault("DB_HOST", "127.0.0.1")
+	port := getEnvOrDefault("DB_PORT", "3306")
+	user := getEnvOrDefault("DB_USER", "isucon")
+	pass := getEnvOrDefault("DB_PASS", "isucon")
+	name := getEnvOrDefault("DB_NAME", "isulibrary")
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&loc=Asia%%2FTokyo", user, pass, host, port, name)
+
+	var err error
+	db, err = sqlx.Open("mysql", dsn)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	var key string
+	err = db.Get(&key, "SELECT `key` FROM `key` WHERE `id` = (SELECT MAX(`id`) FROM `key`)")
+	if err != nil {
+		log.Panic(err)
+	}
+
+	block, err = aes.NewCipher([]byte(key))
+	if err != nil {
+		log.Panic(err)
+	}
+
+	e := echo.New()
+	e.Debug = true
+	e.Use(middleware.Logger())
+
+	api := e.Group("/api")
+	{
+		api.POST("/initialize", initializeHandler)
+
+		membersAPI := api.Group("/members")
+		{
+			membersAPI.POST("", postMemberHandler)
+			membersAPI.GET("", getMembersHandler)
+			membersAPI.GET("/:id", getMemberHandler)
+			membersAPI.PATCH("/:id", patchMemberHandler)
+			membersAPI.DELETE("/:id", banMemberHandler)
+			membersAPI.GET("/:id/qrcode", getMemberQRCodeHandler)
+		}
+
+		booksAPI := api.Group("/books")
+		{
+			booksAPI.POST("", postBookHandler)
+			booksAPI.GET("/:id", getBookHandler)
+		}
+	}
+
+	e.Logger.Fatal(e.Start(":8080"))
 }
+
+/*
+---------------------------------------------------------------
+Domain Models
+---------------------------------------------------------------
+*/
 
 // 会員
 type Member struct {
@@ -74,14 +128,15 @@ type Lending struct {
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
-// 貸出情報付き蔵書
-type BookWithLend struct {
-	ID        string    `json:"id"`
-	Title     string    `json:"title"`
-	Author    string    `json:"author"`
-	Genre     Genre     `json:"genre"`
-	Lending   bool      `json:"lending"`
-	CreatedAt time.Time `json:"created_at"`
+/*
+---------------------------------------------------------------
+Utilities
+---------------------------------------------------------------
+*/
+
+// ULIDを生成
+func generateID() string {
+	return ulid.Make().String()
 }
 
 var db *sqlx.DB
@@ -156,58 +211,11 @@ func generateQRCode(id string) ([]byte, error) {
 	return io.ReadAll(file)
 }
 
-func main() {
-	host := getEnvOrDefault("DB_HOST", "127.0.0.1")
-	port := getEnvOrDefault("DB_PORT", "3306")
-	user := getEnvOrDefault("DB_USER", "isucon")
-	pass := getEnvOrDefault("DB_PASS", "isucon")
-	name := getEnvOrDefault("DB_NAME", "isulibrary")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&loc=Asia%%2FTokyo", user, pass, host, port, name)
-
-	var err error
-	db, err = sqlx.Open("mysql", dsn)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	var key string
-	err = db.Get(&key, "SELECT `key` FROM `key` WHERE `id` = (SELECT MAX(`id`) FROM `key`)")
-	if err != nil {
-		log.Panic(err)
-	}
-
-	block, err = aes.NewCipher([]byte(key))
-	if err != nil {
-		log.Panic(err)
-	}
-
-	e := echo.New()
-	e.Debug = true
-	e.Use(middleware.Logger())
-
-	api := e.Group("/api")
-	{
-		api.POST("/initialize", initializeHandler)
-
-		membersAPI := api.Group("/members")
-		{
-			membersAPI.POST("", postMemberHandler)
-			membersAPI.GET("", getMembersHandler)
-			membersAPI.GET("/:id", getMemberHandler)
-			membersAPI.PATCH("/:id", patchMemberHandler)
-			membersAPI.DELETE("/:id", banMemberHandler)
-			membersAPI.GET("/:id/qrcode", getMemberQRCodeHandler)
-		}
-
-		booksAPI := api.Group("/books")
-		{
-			booksAPI.POST("", postBookHandler)
-			booksAPI.GET("/:id", getBookHandler)
-		}
-	}
-
-	e.Logger.Fatal(e.Start(":8080"))
-}
+/*
+---------------------------------------------------------------
+Initialization API
+---------------------------------------------------------------
+*/
 
 type InitializeHandlerRequest struct {
 	Key string `json:"key"`
@@ -216,12 +224,6 @@ type InitializeHandlerRequest struct {
 type InitializeHandlerResponse struct {
 	Language string `json:"language"`
 }
-
-/*
----------------------------------------------------------------
-Initialization API
----------------------------------------------------------------
-*/
 
 // 初期化用ハンドラ
 func initializeHandler(c echo.Context) error {
