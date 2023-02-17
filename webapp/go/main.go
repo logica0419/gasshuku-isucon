@@ -809,7 +809,7 @@ Lending API
 const LendingPeriod = 3000
 
 type PostLendingsRequest struct {
-	BookIDs  []string `json:"book_id"`
+	BookIDs  []string `json:"book_ids"`
 	MemberID string   `json:"member_id"`
 }
 
@@ -821,6 +821,9 @@ func postLendingsHandler(c echo.Context) error {
 	}
 	if req.MemberID == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "member_id is required")
+	}
+	if len(req.BookIDs) == 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "at least one book_ids is required")
 	}
 
 	tx, err := db.BeginTxx(c.Request().Context(), nil)
@@ -843,8 +846,9 @@ func postLendingsHandler(c echo.Context) error {
 
 	lendingTime := time.Now()
 	due := lendingTime.Add(LendingPeriod * time.Millisecond)
+	res := make([]Lending, len(req.BookIDs))
 
-	for _, bookID := range req.BookIDs {
+	for i, bookID := range req.BookIDs {
 		// 蔵書の存在確認
 		err = tx.GetContext(c.Request().Context(), &Book{}, "SELECT * FROM `book` WHERE `id` = ?", bookID)
 		if err != nil {
@@ -864,10 +868,17 @@ func postLendingsHandler(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
 
+		id := generateID()
+
 		// 貸し出し
 		_, err = tx.ExecContext(c.Request().Context(),
-			"INSERT INTO `lending` (`book_id`, `member_id`, `due`, `created_at`) VALUES (?, ?, ?, ?)",
-			bookID, req.MemberID, due, lendingTime)
+			"INSERT INTO `lending` (`id`, `book_id`, `member_id`, `due`, `created_at`) VALUES (?, ?, ?, ?, ?)",
+			id, bookID, req.MemberID, due, lendingTime)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+
+		err := tx.GetContext(c.Request().Context(), &res[i], "SELECT * FROM `lending` WHERE `id` = ?", id)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
@@ -875,7 +886,7 @@ func postLendingsHandler(c echo.Context) error {
 
 	_ = tx.Commit()
 
-	return c.NoContent(http.StatusCreated)
+	return c.JSON(http.StatusOK, res)
 }
 
 type GetLendingsResponse struct {
