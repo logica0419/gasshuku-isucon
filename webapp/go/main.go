@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -70,6 +71,7 @@ func main() {
 		booksAPI := api.Group("/books")
 		{
 			booksAPI.POST("", postBookHandler)
+			booksAPI.GET("", getBooksHandler)
 			booksAPI.GET("/:id", getBookHandler)
 			booksAPI.GET("/:id/qrcode", getBookQRCodeHandler)
 		}
@@ -309,7 +311,7 @@ func postMemberHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-const memberPageLimit = 500
+const memberPageLimit = 100
 
 type GetMembersResponse struct {
 	Members []Member `json:"members"`
@@ -331,6 +333,11 @@ func getMembersHandler(c echo.Context) error {
 	// シーク法をフロントエンドでは実装したが、バックエンドは力尽きた
 	_ = c.QueryParam("last_member_id")
 
+	order := c.QueryParam("order")
+	if order != "" && order != "name_asc" && order != "name_desc" {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid order")
+	}
+
 	tx, err := db.BeginTxx(c.Request().Context(), &sql.TxOptions{ReadOnly: true})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -339,9 +346,17 @@ func getMembersHandler(c echo.Context) error {
 		_ = tx.Rollback()
 	}()
 
+	query := "SELECT * FROM `member` WHERE `banned` = false "
+	switch order {
+	case "name_asc":
+		query += "ORDER BY `name` ASC "
+	case "name_desc":
+		query += " ORDER BY `name` DESC "
+	}
+	query += "LIMIT ? OFFSET ?"
+
 	members := []Member{}
-	err = tx.SelectContext(c.Request().Context(), &members,
-		"SELECT * FROM `member` WHERE `banned` = false LIMIT ? OFFSET ?", memberPageLimit, (page-1)*memberPageLimit)
+	err = tx.SelectContext(c.Request().Context(), &members, query, memberPageLimit, (page-1)*memberPageLimit)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -447,7 +462,7 @@ func patchMemberHandler(c echo.Context) error {
 		query += "`phone_number` = ?, "
 		params = append(params, req.PhoneNumber)
 	}
-	query = query[:len(query)-2] // 最後の", "を削除
+	query = strings.TrimSuffix(query, ", ")
 	query += " WHERE `id` = ?"
 	params = append(params, id)
 
@@ -583,6 +598,114 @@ func postBookHandler(c echo.Context) error {
 	_ = tx.Commit()
 
 	return c.JSON(http.StatusCreated, res)
+}
+
+const bookPageLimit = 50
+
+type GetBooksResponse struct {
+	Books []GetBookResponse `json:"books"`
+	Total int               `json:"total"`
+}
+
+// 蔵書を検索
+func getBooksHandler(c echo.Context) error {
+	title := c.QueryParam("title")
+	author := c.QueryParam("author")
+	genre := c.QueryParam("genre")
+	if genre != "" {
+		genreInt, err := strconv.Atoi(genre)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+
+		if genreInt < 0 || genreInt > 9 {
+			return echo.NewHTTPError(http.StatusBadRequest, "genre is invalid")
+		}
+	}
+	if genre == "" && title == "" && author == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "title, author or genre is required")
+	}
+
+	pageStr := c.QueryParam("page")
+	if pageStr == "" {
+		pageStr = "1"
+	}
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	// 前ページの最後の蔵書ID
+	// シーク法をフロントエンドでは実装したが、バックエンドは力尽きた
+	_ = c.QueryParam("last_book_id")
+
+	tx, err := db.BeginTxx(c.Request().Context(), nil)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
+	query := "SELECT COUNT(*) FROM `book` WHERE "
+	var args []any
+	if genre != "" {
+		query += "genre = ? AND "
+		args = append(args, genre)
+	}
+	if title != "" {
+		query += "title LIKE ? AND "
+		args = append(args, "%"+title+"%")
+	}
+	if author != "" {
+		query += "author LIKE ? AND "
+		args = append(args, "%"+author+"%")
+	}
+	query = strings.TrimSuffix(query, "AND ")
+
+	var total int
+	err = tx.GetContext(c.Request().Context(), &total, query, args...)
+	if err != nil {
+		c.Logger().Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	if total == 0 {
+		return echo.NewHTTPError(http.StatusNotFound, "no books found")
+	}
+
+	query = strings.ReplaceAll(query, "COUNT(*)", "*")
+	query += "LIMIT ? OFFSET ?"
+	args = append(args, bookPageLimit, (page-1)*bookPageLimit)
+
+	var books []Book
+	err = tx.SelectContext(c.Request().Context(), &books, query, args...)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	if len(books) == 0 {
+		return echo.NewHTTPError(http.StatusNotFound, "no books to show in this page")
+	}
+
+	res := GetBooksResponse{
+		Books: make([]GetBookResponse, len(books)),
+		Total: total,
+	}
+	for i, book := range books {
+		res.Books[i].Book = book
+
+		err = tx.GetContext(c.Request().Context(), &Lending{}, "SELECT * FROM `lending` WHERE `book_id` = ?", book.ID)
+		if err == nil {
+			res.Books[i].Lending = true
+		} else if errors.Is(err, sql.ErrNoRows) {
+			res.Books[i].Lending = false
+		} else {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+	}
+
+	_ = tx.Commit()
+
+	return c.JSON(http.StatusOK, res)
 }
 
 type GetBookResponse struct {
