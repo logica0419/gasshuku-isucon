@@ -201,6 +201,7 @@ func main() {
 
 		booksAPI := api.Group("/books")
 		{
+			booksAPI.POST("", postBookHandler)
 			booksAPI.GET(":id", getBookHandler)
 		}
 	}
@@ -484,6 +485,50 @@ func getMemberQRCodeHandler(c echo.Context) error {
 Books API
 ---------------------------------------------------------------
 */
+
+type PostBookHandlerRequest struct {
+	Title  string `json:"title"`
+	Author string `json:"author"`
+	Genre  Genre  `json:"genre"`
+}
+
+// 蔵書を登録 (複数札を一気に登録)
+func postBookHandler(c echo.Context) error {
+	var req []PostBookHandlerRequest
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	res := []Book{}
+	createdAt := time.Now()
+
+	for _, book := range req {
+		if book.Title == "" || book.Author == "" {
+			return echo.NewHTTPError(http.StatusBadRequest, "title, author is required")
+		}
+		if book.Genre < 0 || book.Genre > 9 {
+			return echo.NewHTTPError(http.StatusBadRequest, "genre is invalid")
+		}
+
+		id := generateID()
+
+		_, err := db.Exec("INSERT INTO `book` (`id`, `title`, `author`, `genre`, `created_at`) VALUES (?, ?, ?, ?, ?)",
+			id, book.Title, book.Author, book.Genre, createdAt)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+
+		var record Book
+		err = db.Get(&record, "SELECT * FROM `book` WHERE `id` = ?", id)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+
+		res = append(res, record)
+	}
+
+	return c.JSON(http.StatusCreated, res)
+}
 
 type GetBookResponse struct {
 	Book
