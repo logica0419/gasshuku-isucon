@@ -80,6 +80,7 @@ func main() {
 		{
 			lendingsAPI.POST("", postLendingsHandler)
 			lendingsAPI.GET("", getLendingsHandler)
+			lendingsAPI.POST("/return", returnLendingHandler)
 		}
 	}
 
@@ -944,4 +945,65 @@ func getLendingsHandler(c echo.Context) error {
 	_ = tx.Commit()
 
 	return c.JSON(http.StatusOK, res)
+}
+
+type ReturnLendingsRequest struct {
+	BookIDs  []string `json:"book_ids"`
+	MemberID string   `json:"member_id"`
+}
+
+// 蔵書を返却
+func returnLendingHandler(c echo.Context) error {
+	var req ReturnLendingsRequest
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if req.MemberID == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "member_id is required")
+	}
+	if len(req.BookIDs) == 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "at least one book_ids is required")
+	}
+
+	tx, err := db.BeginTxx(c.Request().Context(), nil)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
+	// 会員の存在確認
+	err = tx.GetContext(c.Request().Context(), &Member{}, "SELECT * FROM `member` WHERE `id` = ?", req.MemberID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusNotFound, err.Error())
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	for _, bookID := range req.BookIDs {
+		// 貸し出しの存在確認
+		var lending Lending
+		err = tx.GetContext(c.Request().Context(), &lending,
+			"SELECT * FROM `lending` WHERE `member_id` = ? AND `book_id` = ?", req.MemberID, bookID)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return echo.NewHTTPError(http.StatusNotFound, err.Error())
+			}
+
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+
+		_, err = tx.ExecContext(c.Request().Context(),
+			"DELETE FROM `lending` WHERE `member_id` =? AND `book_id` =?", req.MemberID, bookID)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+	}
+
+	_ = tx.Commit()
+
+	return c.NoContent(http.StatusOK)
 }
