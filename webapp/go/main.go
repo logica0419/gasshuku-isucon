@@ -75,6 +75,11 @@ func main() {
 			booksAPI.GET("/:id", getBookHandler)
 			booksAPI.GET("/:id/qrcode", getBookQRCodeHandler)
 		}
+
+		lendingsAPI := api.Group("/lendings")
+		{
+			lendingsAPI.GET("", getLendingsHandler)
+		}
 	}
 
 	e.Logger.Fatal(e.Start(":8080"))
@@ -799,3 +804,48 @@ func getBookQRCodeHandler(c echo.Context) error {
 Lending API
 ---------------------------------------------------------------
 */
+
+type GetLendingsResponse struct {
+	Lending
+	MemberName string `json:"member_name"`
+	BookTitle  string `json:"book_title"`
+}
+
+func getLendingsHandler(c echo.Context) error {
+	tx, err := db.BeginTxx(c.Request().Context(), &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
+	var lendings []Lending
+	err = tx.SelectContext(c.Request().Context(), &lendings, "SELECT * FROM `lending`")
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	res := make([]GetLendingsResponse, len(lendings))
+	for i, lending := range lendings {
+		res[i].Lending = lending
+
+		var member Member
+		err = tx.GetContext(c.Request().Context(), &member, "SELECT * FROM `member` WHERE `id` = ?", lending.MemberID)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+		res[i].MemberName = member.Name
+
+		var book Book
+		err = tx.GetContext(c.Request().Context(), &book, "SELECT * FROM `book` WHERE `id` = ?", lending.BookID)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+		res[i].BookTitle = book.Title
+	}
+
+	_ = tx.Commit()
+
+	return c.JSON(http.StatusOK, res)
+}
