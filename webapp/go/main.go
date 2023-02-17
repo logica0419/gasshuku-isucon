@@ -38,6 +38,7 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
+	defer db.Close()
 
 	var key string
 	err = db.Get(&key, "SELECT `key` FROM `key` WHERE `id` = (SELECT MAX(`id`) FROM `key`)")
