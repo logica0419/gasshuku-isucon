@@ -70,7 +70,7 @@ func main() {
 
 		booksAPI := api.Group("/books")
 		{
-			booksAPI.POST("", postBookHandler)
+			booksAPI.POST("", postBooksHandler)
 			booksAPI.GET("", getBooksHandler)
 			booksAPI.GET("/:id", getBookHandler)
 			booksAPI.GET("/:id/qrcode", getBookQRCodeHandler)
@@ -78,6 +78,7 @@ func main() {
 
 		lendingsAPI := api.Group("/lendings")
 		{
+			lendingsAPI.POST("", postLendingsHandler)
 			lendingsAPI.GET("", getLendingsHandler)
 		}
 	}
@@ -550,16 +551,16 @@ Books API
 ---------------------------------------------------------------
 */
 
-type PostBookHandlerRequest struct {
+type PostBooksRequest struct {
 	Title  string `json:"title"`
 	Author string `json:"author"`
 	Genre  Genre  `json:"genre"`
 }
 
 // 蔵書を登録 (複数札を一気に登録)
-func postBookHandler(c echo.Context) error {
-	var req []PostBookHandlerRequest
-	if err := c.Bind(&req); err != nil {
+func postBooksHandler(c echo.Context) error {
+	var reqSlice []PostBooksRequest
+	if err := c.Bind(&reqSlice); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
@@ -574,11 +575,11 @@ func postBookHandler(c echo.Context) error {
 		_ = tx.Rollback()
 	}()
 
-	for _, book := range req {
-		if book.Title == "" || book.Author == "" {
+	for _, req := range reqSlice {
+		if req.Title == "" || req.Author == "" {
 			return echo.NewHTTPError(http.StatusBadRequest, "title, author is required")
 		}
-		if book.Genre < 0 || book.Genre > 9 {
+		if req.Genre < 0 || req.Genre > 9 {
 			return echo.NewHTTPError(http.StatusBadRequest, "genre is invalid")
 		}
 
@@ -586,7 +587,7 @@ func postBookHandler(c echo.Context) error {
 
 		_, err := tx.ExecContext(c.Request().Context(),
 			"INSERT INTO `book` (`id`, `title`, `author`, `genre`, `created_at`) VALUES (?, ?, ?, ?, ?)",
-			id, book.Title, book.Author, book.Genre, createdAt)
+			id, req.Title, req.Author, req.Genre, createdAt)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
@@ -804,6 +805,78 @@ func getBookQRCodeHandler(c echo.Context) error {
 Lending API
 ---------------------------------------------------------------
 */
+
+const LendingPeriod = 3000
+
+type PostLendingsRequest struct {
+	BookIDs  []string `json:"book_id"`
+	MemberID string   `json:"member_id"`
+}
+
+// 本を貸し出し
+func postLendingsHandler(c echo.Context) error {
+	var req PostLendingsRequest
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if req.MemberID == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "member_id is required")
+	}
+
+	tx, err := db.BeginTxx(c.Request().Context(), nil)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
+	// 会員の存在確認
+	err = tx.GetContext(c.Request().Context(), &Member{}, "SELECT * FROM `member` WHERE `id` = ?", req.MemberID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusNotFound, err.Error())
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	lendingTime := time.Now()
+	due := lendingTime.Add(LendingPeriod * time.Millisecond)
+
+	for _, bookID := range req.BookIDs {
+		// 蔵書の存在確認
+		err = tx.GetContext(c.Request().Context(), &Book{}, "SELECT * FROM `book` WHERE `id` = ?", bookID)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return echo.NewHTTPError(http.StatusNotFound, err.Error())
+			}
+
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+
+		// 貸し出し中かどうか確認
+		var lending Lending
+		err = tx.GetContext(c.Request().Context(), &lending, "SELECT * FROM `lending` WHERE `book_id` = ?", bookID)
+		if err == nil {
+			return echo.NewHTTPError(http.StatusConflict, "this book is already lent")
+		} else if !errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+
+		// 貸し出し
+		_, err = tx.ExecContext(c.Request().Context(),
+			"INSERT INTO `lending` (`book_id`, `member_id`, `due`, `created_at`) VALUES (?, ?, ?, ?)",
+			bookID, req.MemberID, due, lendingTime)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+	}
+
+	_ = tx.Commit()
+
+	return c.NoContent(http.StatusCreated)
+}
 
 type GetLendingsResponse struct {
 	Lending
