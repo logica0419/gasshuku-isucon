@@ -71,6 +71,7 @@ func main() {
 		{
 			booksAPI.POST("", postBookHandler)
 			booksAPI.GET("/:id", getBookHandler)
+			booksAPI.GET("/:id/qrcode", getBookQRCodeHandler)
 		}
 	}
 
@@ -640,6 +641,34 @@ func getBookHandler(c echo.Context) error {
 	_ = tx.Commit()
 
 	return c.JSON(http.StatusOK, res)
+}
+
+// 蔵書のQRコードを取得
+func getBookQRCodeHandler(c echo.Context) error {
+	id := c.Param("id")
+	if id == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "id is required")
+	}
+
+	// 蔵書の存在確認
+	err := db.GetContext(c.Request().Context(), &Book{}, "SELECT * FROM `book` WHERE `id` = ?", id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusNotFound, err.Error())
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	qrFileLock.Lock()
+	defer qrFileLock.Unlock()
+
+	qrCode, err := generateQRCode(id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.Blob(http.StatusOK, "image/png", qrCode)
 }
 
 /*
