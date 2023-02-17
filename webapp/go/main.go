@@ -202,7 +202,7 @@ func main() {
 		booksAPI := api.Group("/books")
 		{
 			booksAPI.POST("", postBookHandler)
-			booksAPI.GET(":id", getBookHandler)
+			booksAPI.GET("/:id", getBookHandler)
 		}
 	}
 
