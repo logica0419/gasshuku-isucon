@@ -896,6 +896,11 @@ type GetLendingsResponse struct {
 }
 
 func getLendingsHandler(c echo.Context) error {
+	overDue := c.QueryParam("over_due")
+	if overDue != "" && overDue != "true" && overDue != "false" {
+		return echo.NewHTTPError(http.StatusBadRequest, "over_due must be boolean value")
+	}
+
 	tx, err := db.BeginTxx(c.Request().Context(), &sql.TxOptions{ReadOnly: true})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -904,8 +909,15 @@ func getLendingsHandler(c echo.Context) error {
 		_ = tx.Rollback()
 	}()
 
+	query := "SELECT * FROM `lending`"
+	args := []any{}
+	if overDue == "true" {
+		query += " WHERE `due` < ?"
+		args = append(args, time.Now())
+	}
+
 	var lendings []Lending
-	err = tx.SelectContext(c.Request().Context(), &lendings, "SELECT * FROM `lending`")
+	err = tx.SelectContext(c.Request().Context(), &lendings, query, args...)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
