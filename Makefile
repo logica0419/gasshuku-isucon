@@ -13,3 +13,7 @@ init-db:
 .PHONY: run-go
 run-go:
 	cd webapp/go && go run *.go
+
+.PHONY: run-bench
+run-bench:
+	cd bench && go run *.go
