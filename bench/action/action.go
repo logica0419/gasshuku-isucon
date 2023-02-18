@@ -51,7 +51,3 @@ func (c *ActionController) libAgent() *agent.Agent {
 func (c *ActionController) searchAgent() *agent.Agent {
 	return utils.WeightedSelect(c.searchAgents)
 }
-
-func (c *ActionController) agent() *agent.Agent {
-	return utils.WeightedSelect(append(c.libAgents, c.searchAgents...))
-}
