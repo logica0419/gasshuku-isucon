@@ -14,5 +14,5 @@ var (
 
 func init() {
 	Contestant = log.New(os.Stdout, "", log.Lmicroseconds)
-	Admin = log.New(os.Stderr, "[Admin]", log.Lmicroseconds)
+	Admin = log.New(os.Stderr, "[Admin] ", log.Lmicroseconds)
 }
