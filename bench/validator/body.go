@@ -7,7 +7,7 @@ import (
 )
 
 func WithBody[V comparable](v V) ValidateOpt {
-	return func(res http.Response) error {
+	return func(res *http.Response) error {
 		var body V
 		if err := utils.ReaderToStruct(res.Body, &body); err != nil {
 			return nil
