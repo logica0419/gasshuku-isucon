@@ -14,6 +14,5 @@ func Validate(res http.Response, opts ...ValidateOpt) error {
 			return err
 		}
 	}
-
 	return nil
 }
