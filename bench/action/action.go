@@ -12,14 +12,20 @@ import (
 // Actionパッケージ内でしか使わないものを管理する構造体
 // Agentsは初期化以降ReadOnlyなため、ロックを取る機構は用意していない
 type ActionController struct {
-	libAgents    []utils.Choice[*agent.Agent]
-	searchAgents []utils.Choice[*agent.Agent]
+	initializeAgent *agent.Agent
+	libAgents       []utils.Choice[*agent.Agent]
+	searchAgents    []utils.Choice[*agent.Agent]
 }
 
 func NewActionController(libAgentsNum int, searchAgentsNum int, baseURL string) (*ActionController, error) {
+	initializeAgent, err := agent.NewAgent(agent.WithBaseURL(baseURL), agent.WithDefaultTransport())
+	if err != nil {
+		return nil, failure.NewError(model.ErrCritical, err)
+	}
+	initializeAgent.Name = "Isulibrary-InitializeAgent"
+
 	libAgents := make([]utils.Choice[*agent.Agent], libAgentsNum)
 	searchAgents := make([]utils.Choice[*agent.Agent], searchAgentsNum)
-	var err error
 
 	for i := 0; i < libAgentsNum; i++ {
 		libAgents[i].Val, err = agent.NewAgent(agent.WithBaseURL(baseURL), agent.WithDefaultTransport())
@@ -39,8 +45,9 @@ func NewActionController(libAgentsNum int, searchAgentsNum int, baseURL string) 
 	}
 
 	return &ActionController{
-		libAgents:    libAgents,
-		searchAgents: searchAgents,
+		initializeAgent: initializeAgent,
+		libAgents:       libAgents,
+		searchAgents:    searchAgents,
 	}, nil
 }
 
