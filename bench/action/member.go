@@ -40,7 +40,7 @@ func (c *ActionController) GetMembers(ctx context.Context, query GetMembersQuery
 
 	req, err := agent.GET(url)
 	if err != nil {
-		return nil, failure.NewError(model.ErrCritical, err)
+		return nil, err
 	}
 
 	res, err := agent.Do(ctx, req)
@@ -67,7 +67,7 @@ func (c *ActionController) PostMember(ctx context.Context, body PostMemberReques
 
 	req, err := agent.POST("/api/members", reader)
 	if err != nil {
-		return nil, failure.NewError(model.ErrCritical, err)
+		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
