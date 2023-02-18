@@ -2,6 +2,7 @@ package action
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/isucon/isucandar/agent"
 	"github.com/isucon/isucandar/failure"
@@ -23,20 +24,22 @@ type PostMemberRequest struct {
 	PhoneNumber string `json:"phone_number"`
 }
 
-func PostMember(ctx context.Context, a agent.Agent, body PostMemberRequest) (model.Member, error) {
+func PostMember(ctx context.Context, a agent.Agent, body PostMemberRequest) (*http.Response, error) {
 	reader, err := utils.StructToReader(body)
 	if err != nil {
-		return model.Member{}, failure.NewError(model.ErrCritical, err)
+		return nil, failure.NewError(model.ErrCritical, err)
 	}
 
 	req, err := a.POST("/member", reader)
 	if err != nil {
-		return model.Member{}, failure.NewError(model.ErrCritical, err)
+		return nil, failure.NewError(model.ErrCritical, err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	res, err := a.Do(ctx, req)
 	if err != nil {
-		return model.Member{}, err
+		return nil, failure.NewError(model.ErrRequestFailed, err)
 	}
+
+	return res, nil
 }
