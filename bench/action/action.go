@@ -9,6 +9,8 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/utils"
 )
 
+// Actionパッケージ内でしか使わないものを管理する構造体
+// Agentsは初期化以降ReadOnlyなため、ロックを取る機構は用意していない
 type ActionController struct {
 	libAgents    []utils.Choice[*agent.Agent]
 	searchAgents []utils.Choice[*agent.Agent]
