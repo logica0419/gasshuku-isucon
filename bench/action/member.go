@@ -10,6 +10,13 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/utils"
 )
 
+type MemberActionController interface {
+	GetMembers(ctx context.Context, query GetMembersQuery) (*http.Response, error)
+	PostMember(ctx context.Context, body PostMemberRequest) (*http.Response, error)
+}
+
+var _ MemberActionController = &ActionController{}
+
 type GetMembersQuery struct {
 	Page         int
 	LastMemberID string
