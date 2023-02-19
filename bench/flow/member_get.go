@@ -16,12 +16,12 @@ import (
 func (c *FlowController) MemberGetFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
 	return func(ctx context.Context, _ int) {
 		res, err := c.ma.GetMembers(ctx, action.GetMembersQuery{})
+		if model.IsErrTimeout(err) {
+			step.AddError(fmt.Errorf("GET /api/members: %w", failure.NewError(model.ErrTimeout, nil)))
+			return
+		}
 		if err != nil {
-			if model.IsErrTimeout(err) {
-				step.AddError(failure.NewError(model.ErrTimeout, fmt.Errorf("GET /api/members: %w", err)))
-			}
-			step.AddError(failure.NewError(model.ErrRequestFailed, fmt.Errorf("GET /api/members: %w", err)))
-
+			step.AddError(fmt.Errorf("GET /api/members: %w", failure.NewError(model.ErrRequestFailed, err)))
 			return
 		}
 

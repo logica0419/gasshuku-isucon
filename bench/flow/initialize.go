@@ -16,12 +16,12 @@ import (
 func (c *FlowController) InitializeFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
 	return func(ctx context.Context, _ int) {
 		res, err := c.ia.Initialize(ctx, c.key)
+		if model.IsErrTimeout(err) {
+			step.AddError(fmt.Errorf("GET /api/members: %w", failure.NewError(model.ErrTimeout, nil)))
+			return
+		}
 		if err != nil {
-			if model.IsErrTimeout(err) {
-				step.AddError(failure.NewError(model.ErrTimeout, fmt.Errorf("POST /api/initialize: %w", err)))
-			}
-			step.AddError(failure.NewError(model.ErrRequestFailed, fmt.Errorf("POST /api/initialize: %w", err)))
-
+			step.AddError(fmt.Errorf("GET /api/members: %w", failure.NewError(model.ErrRequestFailed, err)))
 			return
 		}
 
