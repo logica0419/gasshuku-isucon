@@ -8,7 +8,7 @@ import (
 )
 
 func (s *Scenario) Load(ctx context.Context, step *isucandar.BenchmarkStep) error {
-	ctx, cancel := context.WithTimeout(ctx, benchTime)
+	ctx, cancel := context.WithTimeout(ctx, BenchTime)
 	defer cancel()
 
 	worker, err := worker.NewWorker(s.fc.MemberGetFlow(step), worker.WithInfinityLoop(), worker.WithMaxParallelism(1))

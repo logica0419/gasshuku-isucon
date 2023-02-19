@@ -8,7 +8,7 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/flow"
 )
 
-const benchTime = 10 * time.Second
+const BenchTime = 10 * time.Second
 
 type Scenario struct {
 	wc <-chan worker.WorkerFunc
