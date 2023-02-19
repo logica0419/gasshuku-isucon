@@ -11,7 +11,7 @@ import (
 
 type JsonValidateOpt[V comparable] func(body V) error
 
-func WithBodyValidation[V comparable](opt ...JsonValidateOpt[V]) ValidateOpt {
+func WithJsonValidation[V comparable](opt ...JsonValidateOpt[V]) ValidateOpt {
 	return func(res *http.Response) error {
 		var body V
 		if err := utils.ReaderToStruct(res.Body, &body); err != nil {
@@ -27,7 +27,7 @@ func WithBodyValidation[V comparable](opt ...JsonValidateOpt[V]) ValidateOpt {
 	}
 }
 
-func WithBodyEquals[V comparable](v V) JsonValidateOpt[V] {
+func JsonEquals[V comparable](v V) JsonValidateOpt[V] {
 	return func(body V) error {
 		if body != v {
 			return failure.NewError(model.ErrInvalidBody,
