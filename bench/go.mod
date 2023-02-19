@@ -4,9 +4,13 @@ go 1.19
 
 require (
 	github.com/bytedance/sonic v1.8.0
+	github.com/go-sql-driver/mysql v1.7.0
 	github.com/icrowley/fake v0.0.0-20221112152111-d7b7e2276db2
 	github.com/isucon/isucandar v0.0.0-20220322062028-6dd56dc57d72
+	github.com/jmoiron/sqlx v1.3.5
 	github.com/mattn/go-gimei v0.0.3
+	github.com/oklog/ulid/v2 v2.1.0
+	golang.org/x/exp v0.0.0-20230213192124-5e25df0256eb
 )
 
 require (
