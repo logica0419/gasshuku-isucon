@@ -11,10 +11,10 @@ import (
 )
 
 // JSON配列ボディの検証をするための関数
-type SliceJsonValidationOpt[V comparable] func(body []V) error
+type SliceJsonValidateOpt[V any] func(body []V) error
 
 // JSON配列ボディのデコードと検証を行う
-func WithSliceJsonValidation[V comparable](opt ...SliceJsonValidationOpt[V]) ValidateOpt {
+func WithSliceJsonValidation[V comparable](opt ...SliceJsonValidateOpt[V]) ValidateOpt {
 	return func(res *http.Response) error {
 		var body []V
 		if err := utils.ReaderToStruct(res.Body, &body); err != nil {
@@ -31,7 +31,7 @@ func WithSliceJsonValidation[V comparable](opt ...SliceJsonValidationOpt[V]) Val
 }
 
 // JSON配列ボディの長さが期待する値と等しいか検証
-func SliceJsonLengthEquals[V comparable](length int) SliceJsonValidationOpt[V] {
+func SliceJsonLengthEquals[V any](length int) SliceJsonValidateOpt[V] {
 	return func(body []V) error {
 		if len(body) != length {
 			return failure.NewError(model.ErrInvalidBody,
@@ -42,7 +42,7 @@ func SliceJsonLengthEquals[V comparable](length int) SliceJsonValidationOpt[V] {
 }
 
 // JSON配列ボディの長さが期待する値の範囲内か検証
-func SliceJsonLengthRange[V comparable](min, max int) SliceJsonValidationOpt[V] {
+func SliceJsonLengthRange[V any](min, max int) SliceJsonValidateOpt[V] {
 	return func(body []V) error {
 		if len(body) < min || len(body) > max {
 			return failure.NewError(model.ErrInvalidBody,
@@ -53,7 +53,7 @@ func SliceJsonLengthRange[V comparable](min, max int) SliceJsonValidationOpt[V] 
 }
 
 // 全てのJSON配列ボディの要素に対して検証を行う
-func SliceJsonCheckEach[V comparable](f JsonValidateOpt[V]) SliceJsonValidationOpt[V] {
+func SliceJsonCheckEach[V any](f JsonValidateOpt[V]) SliceJsonValidateOpt[V] {
 	return func(body []V) error {
 		for _, v := range body {
 			if err := f(v); err != nil {
@@ -72,7 +72,7 @@ const (
 )
 
 // JSON配列ボディの要素が指定した順序でソートされているか検証
-func SliceJsonCheckOrder[V comparable, I constraints.Ordered](idxFunc func(v V) I, ord order) SliceJsonValidationOpt[V] {
+func SliceJsonCheckOrder[V any, I constraints.Ordered](idxFunc func(v V) I, ord order) SliceJsonValidateOpt[V] {
 	return func(body []V) error {
 		if len(body) < 2 {
 			return nil

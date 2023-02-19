@@ -10,10 +10,10 @@ import (
 )
 
 // JSONボディの検証をするための関数
-type JsonValidateOpt[V comparable] func(body V) error
+type JsonValidateOpt[V any] func(body V) error
 
 // JSONボディのデコードと検証を行う
-func WithJsonValidation[V comparable](opt ...JsonValidateOpt[V]) ValidateOpt {
+func WithJsonValidation[V any](opt ...JsonValidateOpt[V]) ValidateOpt {
 	return func(res *http.Response) error {
 		var body V
 		if err := utils.ReaderToStruct(res.Body, &body); err != nil {
