@@ -38,9 +38,6 @@ func NewMemberName() string {
 }
 
 func NewMemberAddress() string {
-	if rand.Intn(10) == 0 {
-		return fake.StreetAddress() + ", " + fake.City() + ", " + fake.State() + ", " + fake.Zip()
-	}
 	return fmt.Sprintf("%s%d-%d-%d", gimei.NewAddress().Kanji(),
 		rand.Intn(10), rand.Intn(100), rand.Intn(1000))
 }
