@@ -8,6 +8,11 @@ import (
 	"github.com/bytedance/sonic"
 )
 
+// []byteをJSONとしてデコード
+func ByteToStruct(b []byte, s any) error {
+	return sonic.Unmarshal(b, s)
+}
+
 // JSONとしてio.Readerにエンコード
 func StructToReader(s any) (io.Reader, error) {
 	b, err := sonic.Marshal(s)
