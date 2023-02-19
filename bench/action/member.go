@@ -27,7 +27,7 @@ func (c *ActionController) GetMembers(ctx context.Context, query GetMembersQuery
 	agent := c.libAgent()
 
 	url := "/api/members?"
-	if query.Page != 0 {
+	if query.Page > 1 {
 		url += "page=" + strconv.Itoa(query.Page) + "&"
 	}
 	if query.LastMemberID != "" {
