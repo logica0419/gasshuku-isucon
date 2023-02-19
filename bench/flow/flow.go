@@ -1,17 +1,13 @@
 package flow
 
 import (
+	"github.com/isucon/isucandar/worker"
 	"github.com/logica0419/gasshuku-isucon/bench/action"
 	"github.com/logica0419/gasshuku-isucon/bench/utils"
 )
 
-type AddWorkerRequest struct {
-	Flow string
-	With any
-}
-
 type FlowController struct {
-	wc chan<- AddWorkerRequest
+	wc chan<- worker.WorkerFunc
 
 	key string
 	cr  *utils.Crypt
@@ -21,7 +17,7 @@ type FlowController struct {
 }
 
 func NewFlowController(
-	c chan<- AddWorkerRequest,
+	c chan<- worker.WorkerFunc,
 	ia action.InitializeActionController,
 	ma action.MemberActionController,
 ) (*FlowController, error) {
@@ -32,10 +28,10 @@ func NewFlowController(
 	}
 
 	return &FlowController{
-		wc: c,
+		wc:  c,
 		key: key,
-		cr: cr,
-		ia: ia,
-		ma: ma,
+		cr:  cr,
+		ia:  ia,
+		ma:  ma,
 	}, nil
 }
