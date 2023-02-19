@@ -33,7 +33,7 @@ func NewRepository() (*Repository, error) {
 	}
 
 	var data InitData
-	if err := utils.ByteToStruct(initData, &data); err != nil {
+	if err := utils.DecodeJson(initData, &data); err != nil {
 		return nil, err
 	}
 

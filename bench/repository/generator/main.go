@@ -94,7 +94,7 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
-	r, err := utils.StructToReader(initData)
+	r, err := utils.EncodeJson(initData)
 	if err != nil {
 		log.Panic(err)
 	}
