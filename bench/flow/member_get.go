@@ -19,7 +19,7 @@ func (c *FlowController) MemberGetFlow(step *isucandar.BenchmarkStep) worker.Wor
 			if model.IsErrTimeout(err) {
 				step.AddError(failure.NewError(model.ErrTimeout, err))
 			}
-			step.AddError(err)
+			step.AddError(failure.NewError(model.ErrRequestFailed, err))
 
 			return
 		}
