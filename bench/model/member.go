@@ -19,6 +19,17 @@ type Member struct {
 	CreatedAt   time.Time `json:"created_at"`
 }
 
+func NewMember() *Member {
+	return &Member{
+		ID:          utils.GenerateID(),
+		Name:        NewMemberName(),
+		Address:     NewMemberAddress(),
+		PhoneNumber: NewMemberPhoneNumber(),
+		Banned:      false,
+		CreatedAt:   time.Now(),
+	}
+}
+
 func NewMemberName() string {
 	if rand.Intn(10) == 0 {
 		return fake.FullName()
@@ -39,15 +50,4 @@ func NewMemberPhoneNumber() string {
 		return fake.Phone()
 	}
 	return fmt.Sprintf("0%d-%d-%d", rand.Intn(10), rand.Intn(10000), rand.Intn(10000))
-}
-
-func NewMember() *Member {
-	return &Member{
-		ID:          utils.GenerateID(),
-		Name:        NewMemberName(),
-		Address:     NewMemberAddress(),
-		PhoneNumber: NewMemberPhoneNumber(),
-		Banned:      false,
-		CreatedAt:   time.Now(),
-	}
 }
