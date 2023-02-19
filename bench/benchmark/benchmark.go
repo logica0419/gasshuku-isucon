@@ -12,7 +12,7 @@ type Benchmark struct {
 	ib *isucandar.Benchmark
 }
 
-func NewBenchmark(s *scenario.Scenario) (*Benchmark, error) {
+func newBenchmark(s *scenario.Scenario) (*Benchmark, error) {
 	ib, err := isucandar.NewBenchmark(
 		isucandar.WithLoadTimeout(scenario.BenchTime + time.Second*10),
 	)

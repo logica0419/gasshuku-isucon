@@ -27,7 +27,7 @@ type FlowController struct {
 }
 
 func NewFlowController(
-	c chan<- worker.WorkerFunc,
+	c chan worker.WorkerFunc,
 	ia action.InitializeActionController,
 	ma action.MemberActionController,
 	mr repository.MemberRepository,
