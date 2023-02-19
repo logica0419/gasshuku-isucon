@@ -14,6 +14,7 @@ import (
 type MemberActionController interface {
 	PostMember(ctx context.Context, body PostMemberRequest) (*http.Response, []byte, error)
 	GetMembers(ctx context.Context, query GetMembersQuery) (*http.Response, []byte, error)
+	GetMember(ctx context.Context, id string, encrypted bool) (*http.Response, []byte, error)
 }
 
 var _ MemberActionController = &ActionController{}
@@ -85,6 +86,37 @@ func (c *ActionController) GetMembers(ctx context.Context, query GetMembersQuery
 		url += "order=" + query.Order + "&"
 	}
 	url = url[:len(url)-1] // 最後の一文字(?か&)を削除する
+
+	req, err := agent.GET(url)
+	if err != nil {
+		return nil, nil, failure.NewError(model.ErrCritical, err)
+	}
+
+	res, err := agent.Do(ctx, req)
+	if err != nil {
+		return nil, nil, failure.NewError(model.ErrRequestFailed, err)
+	}
+	defer res.Body.Close()
+
+	b, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, nil, failure.NewError(model.ErrUndecodableBody, err)
+	}
+
+	return res, b, nil
+}
+
+// GET /api/members/:id
+func (c *ActionController) GetMember(ctx context.Context, id string, encrypted bool) (*http.Response, []byte, error) {
+	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
+	defer cancel()
+
+	agent := c.libAgent()
+
+	url := "/api/members/" + id
+	if encrypted {
+		url += "?encrypted=true"
+	}
 
 	req, err := agent.GET(url)
 	if err != nil {
