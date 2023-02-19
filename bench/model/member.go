@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/icrowley/fake"
+	"github.com/logica0419/gasshuku-isucon/bench/utils"
 	"github.com/mattn/go-gimei"
 )
 
@@ -38,4 +39,15 @@ func NewMemberPhoneNumber() string {
 		return fake.Phone()
 	}
 	return fmt.Sprintf("0%d-%d-%d", rand.Intn(10), rand.Intn(10000), rand.Intn(10000))
+}
+
+func NewMember() *Member {
+	return &Member{
+		ID:          utils.GenerateID(),
+		Name:        NewMemberName(),
+		Address:     NewMemberAddress(),
+		PhoneNumber: NewMemberPhoneNumber(),
+		Banned:      false,
+		CreatedAt:   time.Now(),
+	}
 }
