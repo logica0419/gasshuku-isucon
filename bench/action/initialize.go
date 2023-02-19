@@ -35,6 +35,7 @@ func (c *ActionController) Initialize(ctx context.Context, key string) (*http.Re
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 
 	res, err := agent.Do(ctx, req)
 	if err != nil {
