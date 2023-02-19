@@ -11,7 +11,7 @@ func (s *Scenario) Load(ctx context.Context, step *isucandar.BenchmarkStep) erro
 	ctx, cancel := context.WithTimeout(ctx, BenchTime)
 	defer cancel()
 
-	worker, err := worker.NewWorker(s.fc.MemberGetFlow(step), worker.WithInfinityLoop(), worker.WithMaxParallelism(1))
+	worker, err := worker.NewWorker(s.fc.LibraryFlow(step), worker.WithInfinityLoop(), worker.WithMaxParallelism(1))
 	if err != nil {
 		return err
 	}

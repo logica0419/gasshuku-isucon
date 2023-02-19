@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"sync/atomic"
 
 	"github.com/isucon/isucandar/worker"
 	"github.com/logica0419/gasshuku-isucon/bench/action"
@@ -16,6 +17,8 @@ type FlowController struct {
 
 	key string
 	cr  *utils.Crypt
+
+	libInCycleCount uint32
 
 	ia action.InitializeActionController
 	ma action.MemberActionController
@@ -36,11 +39,16 @@ func NewFlowController(
 	}
 
 	return &FlowController{
-		wc:  c,
-		key: key,
-		cr:  cr,
-		ia:  ia,
-		ma:  ma,
-		mr:  mr,
+		wc:              c,
+		key:             key,
+		cr:              cr,
+		libInCycleCount: 0,
+		ia:              ia,
+		ma:              ma,
+		mr:              mr,
 	}, nil
+}
+
+func (c *FlowController) addLibInCycleCount() {
+	atomic.AddUint32(&c.libInCycleCount, 1)
 }
