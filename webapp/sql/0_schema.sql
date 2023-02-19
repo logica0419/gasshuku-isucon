@@ -5,7 +5,7 @@ CREATE TABLE `book` (
   `title` varchar(255) NOT NULL,
   `author` varchar(255) NOT NULL,
   `genre` int NOT NULL,
-  `created_at` datetime NOT NULL,
+  `created_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
@@ -23,8 +23,8 @@ CREATE TABLE `lending` (
   `id` varchar(255) NOT NULL,
   `member_id` varchar(255) NOT NULL,
   `book_id` varchar(255) NOT NULL,
-  `due` datetime NOT NULL,
-  `created_at` datetime NOT NULL,
+  `due` datetime(6) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
@@ -36,6 +36,6 @@ CREATE TABLE `member` (
   `address` varchar(255) NOT NULL,
   `phone_number` varchar(255) NOT NULL,
   `banned` tinyint(1) NOT NULL,
-  `created_at` datetime NOT NULL,
+  `created_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
