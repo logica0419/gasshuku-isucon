@@ -13,18 +13,22 @@ type Benchmark struct {
 }
 
 func NewBenchmark(s *scenario.Scenario) (*Benchmark, error) {
-	b, err := isucandar.NewBenchmark(
+	ib, err := isucandar.NewBenchmark(
 		isucandar.WithLoadTimeout(scenario.BenchTime + time.Second*10),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	b.AddScenario(s)
+	ib.AddScenario(s)
 
-	return &Benchmark{
-		ib: b,
-	}, nil
+	b := &Benchmark{
+		ib: ib,
+	}
+
+	registerErrorHandler(b)
+
+	return b, nil
 }
 
 func (b *Benchmark) Run(ctx context.Context) {
