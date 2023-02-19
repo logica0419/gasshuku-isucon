@@ -26,6 +26,17 @@ func (c *FlowController) membersGetFlow(step *isucandar.BenchmarkStep) flow {
 				{Val: "name_desc", Weight: 1},
 			},
 		)
+
+		idxFunc := func(v model.Member) string { return v.ID }
+		ord := validator.Asc
+		switch order {
+		case "name_asc":
+			idxFunc = func(v model.Member) string { return v.Name }
+		case "name_desc":
+			idxFunc = func(v model.Member) string { return v.Name }
+			ord = validator.Desc
+		}
+
 		limit := false
 
 		for {
@@ -57,20 +68,21 @@ func (c *FlowController) membersGetFlow(step *isucandar.BenchmarkStep) flow {
 
 			err = validator.Validate(res,
 				validator.WithStatusCode(http.StatusOK),
+				validator.WithSliceJsonValidation(
+					validator.SliceJsonLengthRange[model.Member](1, memberPageLimit),
+					validator.SliceJsonCheckOrder(idxFunc, ord),
+					validator.SliceJsonCheckEach(func(body model.Member) error {
+						v, err := c.mr.GetMemberByID(body.ID)
+						if err != nil {
+							return failure.NewError(model.ErrInvalidBody, err)
+						}
+						return validator.JsonEquals(v.Member)(body)
+					}),
+				),
 			)
 			if err != nil {
 				step.AddError(fmt.Errorf("GET /api/members: %w", err))
 				return
-			}
-
-			var body []model.Member
-			err = utils.ReaderToStruct(res.Body, body)
-			if err != nil {
-				step.AddError(fmt.Errorf("GET /api/members: %w", failure.NewError(model.ErrUndecodableBody, err)))
-				return
-			}
-			if len(body) < memberPageLimit {
-				limit = true
 			}
 		}
 	}
