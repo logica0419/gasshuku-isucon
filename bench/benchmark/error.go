@@ -8,10 +8,6 @@ import (
 
 func registerErrorHandler(b *Benchmark) {
 	b.ib.OnError(func(err error, step *isucandar.BenchmarkStep) {
-		if model.IsErrCanceled(err) {
-			return
-		}
-
 		if model.IsErrCritical(err) {
 			logger.Contestant.Printf("critical error - %v", err)
 			logger.Admin.Printf("critical error - %v", err)
