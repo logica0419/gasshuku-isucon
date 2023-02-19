@@ -23,6 +23,11 @@ type GetMembersQuery struct {
 	Order        string
 }
 
+type GetMembersResponse struct {
+	Members []model.Member `json:"members"`
+	Total   int            `json:"total"`
+}
+
 func (c *ActionController) GetMembers(ctx context.Context, query GetMembersQuery) (*http.Response, error) {
 	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
 	defer cancel()
