@@ -22,6 +22,9 @@ func WeightedSelect[V any](choices []Choice[V]) V {
 
 	r := rand.Intn(total)
 	for _, choice := range choices {
+		if choice.Weight <= 0 {
+			choice.Weight = 1
+		}
 		if r < choice.Weight {
 			return choice.Val
 		}
