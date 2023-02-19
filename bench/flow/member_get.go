@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
 
 	"github.com/isucon/isucandar"
@@ -56,7 +57,7 @@ func (c *FlowController) membersGetFlow(step *isucandar.BenchmarkStep) flow {
 			}
 
 			if res.StatusCode == http.StatusNotFound && page > 1 {
-				return
+				break
 			}
 
 			err = validator.Validate(res, b,
@@ -91,6 +92,10 @@ func (c *FlowController) membersGetFlow(step *isucandar.BenchmarkStep) flow {
 			if err != nil {
 				step.AddError(fmt.Errorf("GET /api/members: %w", err))
 				return
+			}
+
+			if rand.Intn(10) == 0 {
+				break
 			}
 
 			page++
