@@ -16,6 +16,8 @@ var (
 	ErrRequestFailed failure.StringCode = "request_failed"
 	// ステータスコードが不正
 	ErrInvalidStatusCode failure.StringCode = "invalid_status_code"
+	// Content-Typeが不正
+	ErrInvalidContentType failure.StringCode = "invalid_content_type"
 	// レスポンスボディがデコード不可
 	ErrUndecodableBody failure.StringCode = "undecodable_body"
 	// レスポンスボディが間違っている
