@@ -29,7 +29,7 @@ type ActionController struct {
 	searchAgents []utils.Choice[*agent.Agent]
 }
 
-func NewActionController(c config.Config) (*ActionController, error) {
+func NewActionController(c *config.Config) (*ActionController, error) {
 	initializeAgent, err := agent.NewAgent(agent.WithBaseURL(c.BaseURL), agent.WithDefaultTransport())
 	if err != nil {
 		return nil, failure.NewError(model.ErrCritical, err)
