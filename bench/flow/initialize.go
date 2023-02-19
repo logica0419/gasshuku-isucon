@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/isucon/isucandar"
@@ -17,9 +18,9 @@ func (c *FlowController) InitializeFlow(step *isucandar.BenchmarkStep) worker.Wo
 		res, err := c.ia.Initialize(ctx, c.key)
 		if err != nil {
 			if model.IsErrTimeout(err) {
-				step.AddError(failure.NewError(model.ErrTimeout, err))
+				step.AddError(failure.NewError(model.ErrTimeout, fmt.Errorf("POST /api/initialize: %w", err)))
 			}
-			step.AddError(failure.NewError(model.ErrRequestFailed, err))
+			step.AddError(failure.NewError(model.ErrRequestFailed, fmt.Errorf("POST /api/initialize: %w", err)))
 
 			return
 		}
@@ -33,7 +34,7 @@ func (c *FlowController) InitializeFlow(step *isucandar.BenchmarkStep) worker.Wo
 			),
 		)
 		if err != nil {
-			step.AddError(err)
+			step.AddError(fmt.Errorf("POST /api/initialize: %w", err))
 			return
 		}
 	}

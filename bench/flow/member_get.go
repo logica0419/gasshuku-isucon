@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/isucon/isucandar"
@@ -17,9 +18,9 @@ func (c *FlowController) MemberGetFlow(step *isucandar.BenchmarkStep) worker.Wor
 		res, err := c.ma.GetMembers(ctx, action.GetMembersQuery{})
 		if err != nil {
 			if model.IsErrTimeout(err) {
-				step.AddError(failure.NewError(model.ErrTimeout, err))
+				step.AddError(failure.NewError(model.ErrTimeout, fmt.Errorf("GET /api/members: %w", err)))
 			}
-			step.AddError(failure.NewError(model.ErrRequestFailed, err))
+			step.AddError(failure.NewError(model.ErrRequestFailed, fmt.Errorf("GET /api/members: %w", err)))
 
 			return
 		}
@@ -28,7 +29,7 @@ func (c *FlowController) MemberGetFlow(step *isucandar.BenchmarkStep) worker.Wor
 			validator.WithStatusCode(http.StatusOK),
 		)
 		if err != nil {
-			step.AddError(err)
+			step.AddError(fmt.Errorf("GET /api/members: %w", err))
 			return
 		}
 	}
