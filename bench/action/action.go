@@ -45,7 +45,6 @@ func NewActionController(c *config.Config) (*ActionController, error) {
 			return nil, failure.NewError(model.ErrCritical, err)
 		}
 		libAgents[i].Val.Name = fmt.Sprintf("Isulibrary-LibAgent-%d", i+1)
-		libAgents[i].Weight = 1
 	}
 	for i := 0; i < searchAgentsNum; i++ {
 		searchAgents[i].Val, err = agent.NewAgent(agent.WithBaseURL(c.BaseURL), agent.WithDefaultTransport())
@@ -53,7 +52,6 @@ func NewActionController(c *config.Config) (*ActionController, error) {
 			return nil, failure.NewError(model.ErrCritical, err)
 		}
 		searchAgents[i].Val.Name = fmt.Sprintf("Isulibrary-SearchAgent-%d", i+1)
-		searchAgents[i].Weight = 1
 	}
 
 	return &ActionController{

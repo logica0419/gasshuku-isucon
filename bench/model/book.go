@@ -63,13 +63,13 @@ func NewBookGenre() Genre {
 		[]utils.Choice[Genre]{
 			{Val: General, Weight: 3},
 			{Val: Philosophy, Weight: 2},
-			{Val: Religion, Weight: 1},
+			{Val: Religion},
 			{Val: SocialScience, Weight: 2},
 			{Val: Mathematics, Weight: 5},
 			{Val: AppliedSciences, Weight: 6},
-			{Val: Arts, Weight: 1},
-			{Val: Literature, Weight: 1},
-			{Val: Geography, Weight: 1},
+			{Val: Arts},
+			{Val: Literature},
+			{Val: Geography},
 		},
 	)
 }
