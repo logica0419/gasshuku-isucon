@@ -33,5 +33,7 @@ func NewRepository() (*Repository, error) {
 		return nil, err
 	}
 
+	r.AddMembers(data.Members)
+
 	return r, nil
 }

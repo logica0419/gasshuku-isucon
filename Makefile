@@ -17,3 +17,7 @@ run-go:
 .PHONY: run-bench
 run-bench:
 	cd bench && go run *.go
+
+.PHONY: run-generator
+run-generator:
+	cd bench/repository/generator && go run *.go
