@@ -9,8 +9,16 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/utils"
 )
 
+type InitializeActionController interface {
+	Initialize(ctx context.Context, key string) (*http.Response, error)
+}
+
 type InitializeHandlerRequest struct {
 	Key string `json:"key"`
+}
+
+type InitializeHandlerResponse struct {
+	Language string `json:"language"`
 }
 
 func (c *ActionController) Initialize(ctx context.Context, key string) (*http.Response, error) {
