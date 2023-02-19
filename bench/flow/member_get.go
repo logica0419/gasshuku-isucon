@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -37,8 +38,6 @@ func (c *FlowController) membersGetFlow(step *isucandar.BenchmarkStep) flow {
 			ord = validator.Desc
 		}
 
-		limit := false
-
 		for {
 			query := action.GetMembersQuery{
 				Page:         page,
@@ -55,35 +54,48 @@ func (c *FlowController) membersGetFlow(step *isucandar.BenchmarkStep) flow {
 				step.AddError(fmt.Errorf("GET /api/members: %w", failure.NewError(model.ErrRequestFailed, err)))
 				return
 			}
+			defer res.Body.Close()
 
-			if limit {
-				err = validator.Validate(res,
-					validator.WithStatusCode(http.StatusNotFound),
-				)
-				if err != nil {
-					step.AddError(fmt.Errorf("GET /api/members: %w", err))
-				}
+			if res.StatusCode == http.StatusNotFound && page > 1 {
 				return
 			}
 
 			err = validator.Validate(res,
 				validator.WithStatusCode(http.StatusOK),
-				validator.WithSliceJsonValidation(
-					validator.SliceJsonLengthRange[model.Member](1, memberPageLimit),
-					validator.SliceJsonCheckOrder(idxFunc, ord),
-					validator.SliceJsonCheckEach(func(body model.Member) error {
-						v, err := c.mr.GetMemberByID(body.ID)
-						if err != nil {
-							return failure.NewError(model.ErrInvalidBody, err)
-						}
-						return validator.JsonEquals(v.Member)(body)
-					}),
+				validator.WithContentType("application/json"),
+				validator.WithJsonValidation(
+					validator.JsonSliceFieldValidate[action.GetMembersResponse]("Members",
+						validator.SliceJsonLengthRange[model.Member](1, memberPageLimit),
+						validator.SliceJsonCheckOrder(idxFunc, ord),
+						validator.SliceJsonCheckEach(func(body model.Member) error {
+							v, err := c.mr.GetMemberByID(body.ID)
+							if err != nil {
+								return failure.NewError(model.ErrInvalidBody, err)
+							}
+							return validator.JsonEquals(v.Member)(body)
+						}),
+						func(body []model.Member) error {
+							lastMemberID = body[len(body)-1].ID
+							return nil
+						},
+					),
+					validator.JsonFieldValidate[action.GetMembersResponse]("Total",
+						func(total int) error {
+							if total <= 0 {
+								return failure.NewError(model.ErrInvalidBody, errors.New("total is invalid"))
+							}
+							return nil
+						},
+					),
 				),
 			)
 			if err != nil {
 				step.AddError(fmt.Errorf("GET /api/members: %w", err))
 				return
 			}
+
+			res.Body.Close()
+			page++
 		}
 	}
 }
