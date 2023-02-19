@@ -94,7 +94,6 @@ func (c *FlowController) membersGetFlow(step *isucandar.BenchmarkStep) flow {
 				return
 			}
 
-			res.Body.Close()
 			page++
 		}
 	}
