@@ -32,10 +32,14 @@ func IsErrCritical(err error) bool {
 
 func IsErrTimeout(err error) bool {
 	if failure.IsCode(err, ErrTimeout) ||
-		failure.Is(err, context.DeadlineExceeded) ||
 		failure.IsCode(err, failure.TimeoutErrorCode) {
 		return true
 	}
 	var nErr net.Error
 	return failure.As(err, &nErr) && nErr.Timeout()
+}
+
+func IsErrCanceled(err error) bool {
+	return failure.IsCode(err, failure.CanceledErrorCode) ||
+		failure.Is(err, context.DeadlineExceeded)
 }
