@@ -4,11 +4,13 @@ import (
 	"math/rand"
 )
 
+// 重み付き選択肢
 type Choice[V any] struct {
 	Val    V
 	Weight int
 }
 
+// 重み付きランダム選択
 func WeightedSelect[V any](choices []Choice[V]) V {
 	total := 0
 	for _, choice := range choices {

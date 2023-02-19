@@ -24,7 +24,8 @@ func StructToReader(s any) (io.Reader, error) {
 }
 
 // io.ReaderをJSONとしてデコード
-// 予期しないJSONが来る可能性があるので、標準パッケージでデコードする
+//
+//	予期しないJSONが来る可能性があるので、標準パッケージでデコードする
 func ReaderToStruct(r io.Reader, s any) error {
 	return json.NewDecoder(r).Decode(s)
 }

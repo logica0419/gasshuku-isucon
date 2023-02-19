@@ -30,8 +30,9 @@ func initializeCharCode() {
 }
 
 // ", '. `, \ を覗く英数字と記号をリストに登録
-// ref: https://github.com/githayu/apps.hayu.io/blob/master/src/app/random/unicode-blocks.ts
-// (大本: https://ja.wikipedia.org/wiki/%E3%83%96%E3%83%AD%E3%83%83%E3%82%AF_(Unicode))
+//
+//	ref: https://github.com/githayu/apps.hayu.io/blob/master/src/app/random/unicode-blocks.ts
+//	(大本: https://ja.wikipedia.org/wiki/%E3%83%96%E3%83%AD%E3%83%83%E3%82%AF_(Unicode))
 func initializeCharCodeWithSign() {
 	for i := '0'; i <= '9'; i++ {
 		codesWithSign = append(codesWithSign, i)

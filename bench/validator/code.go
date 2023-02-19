@@ -8,6 +8,7 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/model"
 )
 
+// ステータスコードが期待する値と等しいか検証
 func WithStatusCode(code int) ValidateOpt {
 	return func(res *http.Response) error {
 		if res.StatusCode != code {

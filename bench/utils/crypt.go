@@ -8,10 +8,12 @@ import (
 	"io"
 )
 
+// AES + CTRモード + base64による暗号 / 復号化ツール
 type Crypt struct {
 	block cipher.Block
 }
 
+// 暗号化ツールを生成
 func NewCrypt(key string) (*Crypt, error) {
 	block, err := aes.NewCipher([]byte(key))
 	if err != nil {
@@ -20,6 +22,7 @@ func NewCrypt(key string) (*Crypt, error) {
 	return &Crypt{block: block}, nil
 }
 
+// 暗号化
 func (c *Crypt) Encrypt(plainText string) (string, error) {
 	cipherText := make([]byte, aes.BlockSize+len([]byte(plainText)))
 	iv := cipherText[:aes.BlockSize]
@@ -31,6 +34,7 @@ func (c *Crypt) Encrypt(plainText string) (string, error) {
 	return base64.StdEncoding.EncodeToString(cipherText), nil
 }
 
+// 復号化
 func (c *Crypt) Decrypt(cipherText string) (string, error) {
 	cipherByte, err := base64.StdEncoding.DecodeString(cipherText)
 	if err != nil {

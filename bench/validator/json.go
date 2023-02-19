@@ -9,8 +9,10 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/utils"
 )
 
+// JSONボディの検証をするための関数
 type JsonValidateOpt[V comparable] func(body V) error
 
+// JSONボディのデコードと検証を行う
 func WithJsonValidation[V comparable](opt ...JsonValidateOpt[V]) ValidateOpt {
 	return func(res *http.Response) error {
 		var body V
@@ -27,6 +29,7 @@ func WithJsonValidation[V comparable](opt ...JsonValidateOpt[V]) ValidateOpt {
 	}
 }
 
+// JSONボディが期待する値と等しいか検証
 func JsonEquals[V comparable](v V) JsonValidateOpt[V] {
 	return func(body V) error {
 		if body != v {
