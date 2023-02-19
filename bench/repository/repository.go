@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"sync"
 
 	"github.com/logica0419/gasshuku-isucon/bench/model"
@@ -14,6 +15,8 @@ type InitData struct {
 	Members []*model.MemberWithLending `json:"members"`
 	Books   []*model.BookWithLending   `json:"books"`
 }
+
+var ErrNotFound = errors.New("not found")
 
 type Repository struct {
 	mLock       sync.RWMutex
