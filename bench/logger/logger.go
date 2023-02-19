@@ -13,6 +13,6 @@ var (
 )
 
 func init() {
-	Contestant = log.New(os.Stdout, "", log.Lmicroseconds)
+	Contestant = log.New(os.Stdout, "", log.Ltime)
 	Admin = log.New(os.Stderr, "[Admin] ", log.Lmicroseconds)
 }
