@@ -1,6 +1,7 @@
 package repository
 
 import (
+	_ "embed"
 	"errors"
 	"sync"
 
@@ -8,7 +9,7 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/utils"
 )
 
-// go:embed init_data.json
+//go:embed init_data.json
 var initData []byte
 
 type InitData struct {
