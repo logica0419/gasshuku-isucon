@@ -2,6 +2,7 @@ package action
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -11,11 +12,49 @@ import (
 )
 
 type MemberActionController interface {
-	GetMembers(ctx context.Context, query GetMembersQuery) (*http.Response, error)
-	PostMember(ctx context.Context, body PostMemberRequest) (*http.Response, error)
+	PostMember(ctx context.Context, body PostMemberRequest) (*http.Response, []byte, error)
+	GetMembers(ctx context.Context, query GetMembersQuery) (*http.Response, []byte, error)
 }
 
 var _ MemberActionController = &ActionController{}
+
+type PostMemberRequest struct {
+	Name        string `json:"name"`
+	Address     string `json:"address"`
+	PhoneNumber string `json:"phone_number"`
+}
+
+// POST /api/members
+func (c *ActionController) PostMember(ctx context.Context, body PostMemberRequest) (*http.Response, []byte, error) {
+	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
+	defer cancel()
+
+	reader, err := utils.EncodeJson(body)
+	if err != nil {
+		return nil, nil, failure.NewError(model.ErrCritical, err)
+	}
+
+	agent := c.libAgent()
+
+	req, err := agent.POST("/api/members", reader)
+	if err != nil {
+		return nil, nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	res, err := agent.Do(ctx, req)
+	if err != nil {
+		return nil, nil, failure.NewError(model.ErrRequestFailed, err)
+	}
+	defer res.Body.Close()
+
+	b, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, nil, failure.NewError(model.ErrUndecodableBody, err)
+	}
+
+	return res, b, nil
+}
 
 type GetMembersQuery struct {
 	Page         int
@@ -28,7 +67,8 @@ type GetMembersResponse struct {
 	Total   int            `json:"total"`
 }
 
-func (c *ActionController) GetMembers(ctx context.Context, query GetMembersQuery) (*http.Response, error) {
+// GET /api/members
+func (c *ActionController) GetMembers(ctx context.Context, query GetMembersQuery) (*http.Response, []byte, error) {
 	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
 	defer cancel()
 
@@ -48,44 +88,19 @@ func (c *ActionController) GetMembers(ctx context.Context, query GetMembersQuery
 
 	req, err := agent.GET(url)
 	if err != nil {
-		return nil, err
+		return nil, nil, failure.NewError(model.ErrCritical, err)
 	}
 
 	res, err := agent.Do(ctx, req)
 	if err != nil {
-		return nil, failure.NewError(model.ErrRequestFailed, err)
+		return nil, nil, failure.NewError(model.ErrRequestFailed, err)
 	}
+	defer res.Body.Close()
 
-	return res, nil
-}
-
-type PostMemberRequest struct {
-	Name        string `json:"name"`
-	Address     string `json:"address"`
-	PhoneNumber string `json:"phone_number"`
-}
-
-func (c *ActionController) PostMember(ctx context.Context, body PostMemberRequest) (*http.Response, error) {
-	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
-	defer cancel()
-
-	reader, err := utils.StructToReader(body)
+	b, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, failure.NewError(model.ErrCritical, err)
+		return nil, nil, failure.NewError(model.ErrUndecodableBody, err)
 	}
 
-	agent := c.libAgent()
-
-	req, err := agent.POST("/api/members", reader)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	res, err := agent.Do(ctx, req)
-	if err != nil {
-		return nil, failure.NewError(model.ErrRequestFailed, err)
-	}
-
-	return res, nil
+	return res, b, nil
 }
