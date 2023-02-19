@@ -15,7 +15,7 @@ import (
 
 func (c *FlowController) InitializeFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
 	return func(ctx context.Context, _ int) {
-		res, err := c.ia.Initialize(ctx, c.key)
+		res, b, err := c.ia.Initialize(ctx, c.key)
 		if model.IsErrTimeout(err) {
 			step.AddError(fmt.Errorf("GET /api/members: %w", failure.NewError(model.ErrTimeout, nil)))
 			return
@@ -25,7 +25,7 @@ func (c *FlowController) InitializeFlow(step *isucandar.BenchmarkStep) worker.Wo
 			return
 		}
 
-		err = validator.Validate(res,
+		err = validator.Validate(res, b,
 			validator.WithStatusCode(http.StatusOK),
 			validator.WithJsonValidation(
 				validator.JsonEquals(action.InitializeHandlerResponse{
