@@ -6,11 +6,14 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"io"
+
+	"github.com/logica0419/helpisu"
 )
 
 // AES + CTRモード + base64による暗号 / 復号化ツール
 type Crypt struct {
 	block cipher.Block
+	cache *helpisu.Cache[string, string]
 }
 
 // 暗号化ツールを生成
@@ -19,11 +22,18 @@ func NewCrypt(key string) (*Crypt, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Crypt{block: block}, nil
+	return &Crypt{
+		block: block,
+		cache: helpisu.NewCache[string, string](),
+	}, nil
 }
 
 // 暗号化
 func (c *Crypt) Encrypt(plainText string) (string, error) {
+	if v, ok := c.cache.Get(plainText); ok {
+		return v, nil
+	}
+
 	cipherText := make([]byte, aes.BlockSize+len([]byte(plainText)))
 	iv := cipherText[:aes.BlockSize]
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
@@ -31,11 +41,18 @@ func (c *Crypt) Encrypt(plainText string) (string, error) {
 	}
 	encryptStream := cipher.NewCTR(c.block, iv)
 	encryptStream.XORKeyStream(cipherText[aes.BlockSize:], []byte(plainText))
-	return base64.StdEncoding.EncodeToString(cipherText), nil
+	encryptText := base64.StdEncoding.EncodeToString(cipherText)
+
+	c.cache.Set(plainText, encryptText)
+	return encryptText, nil
 }
 
 // 復号化
 func (c *Crypt) Decrypt(cipherText string) (string, error) {
+	if v, ok := c.cache.Get(cipherText); ok {
+		return v, nil
+	}
+
 	cipherByte, err := base64.StdEncoding.DecodeString(cipherText)
 	if err != nil {
 		return "", err
@@ -43,5 +60,7 @@ func (c *Crypt) Decrypt(cipherText string) (string, error) {
 	decryptedText := make([]byte, len([]byte(cipherByte[aes.BlockSize:])))
 	decryptStream := cipher.NewCTR(c.block, []byte(cipherByte[:aes.BlockSize]))
 	decryptStream.XORKeyStream(decryptedText, []byte(cipherByte[aes.BlockSize:]))
+
+	c.cache.Set(cipherText, string(decryptedText))
 	return string(decryptedText), nil
 }
