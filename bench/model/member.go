@@ -11,22 +11,30 @@ import (
 )
 
 type Member struct {
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	Address     string    `json:"address"`
-	PhoneNumber string    `json:"phone_number"`
-	Banned      bool      `json:"banned"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID          string    `json:"id" db:"id"`
+	Name        string    `json:"name" db:"name"`
+	Address     string    `json:"address" db:"address"`
+	PhoneNumber string    `json:"phone_number" db:"phone_number"`
+	Banned      bool      `json:"banned" db:"banned"`
+	CreatedAt   time.Time `json:"created_at" db:"created_at"`
 }
 
-func NewMember() *Member {
-	return &Member{
-		ID:          utils.GenerateID(),
-		Name:        NewMemberName(),
-		Address:     NewMemberAddress(),
-		PhoneNumber: NewMemberPhoneNumber(),
-		Banned:      false,
-		CreatedAt:   time.Now(),
+type MemberWithLending struct {
+	Member
+	Lending bool `json:"lending"`
+}
+
+func NewMember() *MemberWithLending {
+	return &MemberWithLending{
+		Member: Member{
+			ID:          utils.GenerateID(),
+			Name:        NewMemberName(),
+			Address:     NewMemberAddress(),
+			PhoneNumber: NewMemberPhoneNumber(),
+			Banned:      false,
+			CreatedAt:   time.Now(),
+		},
+		Lending: false,
 	}
 }
 
