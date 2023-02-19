@@ -24,6 +24,9 @@ type GetMembersQuery struct {
 }
 
 func (c *ActionController) GetMembers(ctx context.Context, query GetMembersQuery) (*http.Response, error) {
+	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
+	defer cancel()
+
 	agent := c.libAgent()
 
 	url := "/api/members?"
@@ -58,6 +61,9 @@ type PostMemberRequest struct {
 }
 
 func (c *ActionController) PostMember(ctx context.Context, body PostMemberRequest) (*http.Response, error) {
+	ctx, cancel := context.WithTimeout(ctx, c.requestTimeout)
+	defer cancel()
+
 	reader, err := utils.StructToReader(body)
 	if err != nil {
 		return nil, failure.NewError(model.ErrCritical, err)

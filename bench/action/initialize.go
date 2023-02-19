@@ -22,6 +22,9 @@ type InitializeHandlerResponse struct {
 }
 
 func (c *ActionController) Initialize(ctx context.Context, key string) (*http.Response, error) {
+	ctx, cancel := context.WithTimeout(ctx, c.initializeTimeout)
+	defer cancel()
+
 	agent := c.initializeAgent
 
 	body, err := utils.StructToReader(InitializeHandlerRequest{
