@@ -88,6 +88,11 @@ func main() {
 		log.Panic(err)
 	}
 
+	_, err = tx.Exec("INSERT INTO `key` (`key`) VALUES (?)", utils.RandStringWithSign(16))
+	if err != nil {
+		log.Panic(err)
+	}
+
 	_ = tx.Commit()
 
 	f, err := os.Create("../init_data.json")
