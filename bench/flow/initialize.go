@@ -13,6 +13,8 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/validator"
 )
 
+var langList = []string{"Go"}
+
 func (c *FlowController) InitializeFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
 	return func(ctx context.Context, _ int) {
 		res, b, err := c.ia.Initialize(ctx, c.key)
@@ -28,9 +30,16 @@ func (c *FlowController) InitializeFlow(step *isucandar.BenchmarkStep) worker.Wo
 		err = validator.Validate(res, b,
 			validator.WithStatusCode(http.StatusOK),
 			validator.WithJsonValidation(
-				validator.JsonEquals(action.InitializeHandlerResponse{
-					Language: "Go",
-				}),
+				validator.JsonFieldValidate[action.InitializeHandlerResponse]("Language",
+					func(lang string) error {
+						for _, implemented := range langList {
+							if lang == implemented {
+								return nil
+							}
+						}
+						return fmt.Errorf("language not implemented: %s", lang)
+					},
+				),
 			),
 		)
 		if err != nil {
