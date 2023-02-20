@@ -175,12 +175,12 @@ func encrypt(plainText string) (string, error) {
 	}
 	encryptStream := cipher.NewCTR(block, iv)
 	encryptStream.XORKeyStream(cipherText[aes.BlockSize:], []byte(plainText))
-	return base64.StdEncoding.EncodeToString(cipherText), nil
+	return base64.URLEncoding.EncodeToString(cipherText), nil
 }
 
 // AES + CTRモード + base64エンコードで暗号化されたテキストを複合
 func decrypt(cipherText string) (string, error) {
-	cipherByte, err := base64.StdEncoding.DecodeString(cipherText)
+	cipherByte, err := base64.URLEncoding.DecodeString(cipherText)
 	if err != nil {
 		return "", err
 	}

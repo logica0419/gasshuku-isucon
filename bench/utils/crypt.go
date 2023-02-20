@@ -41,7 +41,7 @@ func (c *Crypt) Encrypt(plainText string) (string, error) {
 	}
 	encryptStream := cipher.NewCTR(c.block, iv)
 	encryptStream.XORKeyStream(cipherText[aes.BlockSize:], []byte(plainText))
-	encryptText := base64.StdEncoding.EncodeToString(cipherText)
+	encryptText := base64.URLEncoding.EncodeToString(cipherText)
 
 	c.cache.Set(plainText, encryptText)
 	return encryptText, nil
@@ -53,7 +53,7 @@ func (c *Crypt) Decrypt(cipherText string) (string, error) {
 		return v, nil
 	}
 
-	cipherByte, err := base64.StdEncoding.DecodeString(cipherText)
+	cipherByte, err := base64.URLEncoding.DecodeString(cipherText)
 	if err != nil {
 		return "", err
 	}
