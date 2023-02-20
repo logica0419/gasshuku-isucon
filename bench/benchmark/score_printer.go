@@ -8,17 +8,21 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/grader"
 )
 
-const printPeriod = 3 * time.Second
+const printPeriod = 1 * time.Second
 
-func scorePrinter(ctx context.Context, step *isucandar.BenchmarkStep) error {
-	for {
-		ticker := time.NewTicker(printPeriod)
+func registerScorePrinter(b *Benchmark) {
+	b.ib.Load(func(ctx context.Context, step *isucandar.BenchmarkStep) error {
+		for {
+			for {
+				ticker := time.NewTicker(printPeriod)
 
-		select {
-		case <-ticker.C:
-			_ = grader.CulcResult(step.Result(), false)
-		case <-ctx.Done():
-			return nil
+				select {
+				case <-ticker.C:
+					_ = grader.CulcResult(step.Result(), false)
+				case <-ctx.Done():
+					return nil
+				}
+			}
 		}
-	}
+	})
 }

@@ -18,7 +18,7 @@ type Benchmark struct {
 
 func newBenchmark(c *config.Config, s *scenario.Scenario) (*Benchmark, error) {
 	ib, err := isucandar.NewBenchmark(
-		isucandar.WithLoadTimeout(scenario.BenchTime + time.Second*10),
+		isucandar.WithLoadTimeout(scenario.BenchTime + time.Second*1),
 	)
 	if err != nil {
 		return nil, err
@@ -32,6 +32,7 @@ func newBenchmark(c *config.Config, s *scenario.Scenario) (*Benchmark, error) {
 	}
 
 	registerErrorHandler(b)
+	registerScorePrinter(b)
 
 	return b, nil
 }
