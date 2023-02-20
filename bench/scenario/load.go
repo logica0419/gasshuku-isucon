@@ -2,10 +2,13 @@ package scenario
 
 import (
 	"context"
+	"time"
 
 	"github.com/isucon/isucandar"
 	"github.com/isucon/isucandar/worker"
 )
+
+const BenchTime = 10 * time.Second
 
 func (s *Scenario) Load(ctx context.Context, step *isucandar.BenchmarkStep) error {
 	ctx, cancel := context.WithTimeout(ctx, BenchTime)
