@@ -17,7 +17,7 @@ var langList = []string{"Go"}
 
 func (c *FlowController) InitializeFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
 	return func(ctx context.Context, _ int) {
-		res, b, err := c.ia.Initialize(ctx, c.key)
+		res, err := c.ia.Initialize(ctx, c.key)
 		if model.IsErrTimeout(err) {
 			step.AddError(fmt.Errorf("POST /api/initialize: %w", failure.NewError(model.ErrTimeout, err)))
 			return
@@ -27,7 +27,7 @@ func (c *FlowController) InitializeFlow(step *isucandar.BenchmarkStep) worker.Wo
 			return
 		}
 
-		err = validator.Validate(res, b,
+		err = validator.Validate(res,
 			validator.WithStatusCode(http.StatusOK),
 			validator.WithJsonValidation(
 				validator.JsonFieldValidate[action.InitializeHandlerResponse]("Language",
