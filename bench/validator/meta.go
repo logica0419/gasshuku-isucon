@@ -11,7 +11,7 @@ import (
 
 // ステータスコードが期待する値と等しいか検証
 func WithStatusCode(code int) ValidateOpt {
-	return func(res *http.Response, _ []byte) error {
+	return func(res *http.Response) error {
 		if res.StatusCode != code {
 			return failure.NewError(model.ErrInvalidStatusCode,
 				fmt.Errorf("expected: %d, actual: %d", code, res.StatusCode))
@@ -22,7 +22,7 @@ func WithStatusCode(code int) ValidateOpt {
 
 // Content-Typeヘッダーが期待する値と等しいか検証
 func WithContentType(contentType string) ValidateOpt {
-	return func(res *http.Response, _ []byte) error {
+	return func(res *http.Response) error {
 		actual := res.Header.Get("Content-Type")
 		if !strings.HasPrefix(actual, contentType) {
 			return failure.NewError(model.ErrInvalidContentType,

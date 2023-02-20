@@ -14,9 +14,9 @@ type JsonValidateOpt[V any] func(body V) error
 
 // JSONボディのデコードと検証を行う
 func WithJsonValidation[V any](opt ...JsonValidateOpt[V]) ValidateOpt {
-	return func(_ *http.Response, b []byte) error {
+	return func(res *http.Response) error {
 		var body V
-		if err := utils.DecodeJsonWithStandard(b, &body); err != nil {
+		if err := utils.ReaderToStruct(res.Body, &body); err != nil {
 			return failure.NewError(model.ErrUndecodableBody, err)
 		}
 
