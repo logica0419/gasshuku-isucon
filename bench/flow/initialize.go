@@ -19,11 +19,11 @@ func (c *FlowController) InitializeFlow(step *isucandar.BenchmarkStep) worker.Wo
 	return func(ctx context.Context, _ int) {
 		res, b, err := c.ia.Initialize(ctx, c.key)
 		if model.IsErrTimeout(err) {
-			step.AddError(fmt.Errorf("GET /api/members: %w", failure.NewError(model.ErrTimeout, nil)))
+			step.AddError(fmt.Errorf("POST /api/initialize: %w", failure.NewError(model.ErrTimeout, err)))
 			return
 		}
 		if err != nil {
-			step.AddError(fmt.Errorf("GET /api/members: %w", failure.NewError(model.ErrRequestFailed, err)))
+			step.AddError(fmt.Errorf("POST /api/initialize: %w", failure.NewError(model.ErrRequestFailed, err)))
 			return
 		}
 
