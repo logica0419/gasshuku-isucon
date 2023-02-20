@@ -9,36 +9,40 @@ import (
 )
 
 func CulcResult(result *isucandar.BenchmarkResult, finish bool) bool {
+	logger.Admin.Print("")
+	logger.Admin.Print("---------Bench Result---------")
+
 	passed := true
-	reason := "pass"
+	status := "pass"
 	errors := result.Errors.All()
 
 	setScore(result)
 	scoreRaw := result.Score.Sum()
 
+	logger.Admin.Printf("breakdown:")
 	for tag, count := range result.Score.Breakdown() {
-		logger.Admin.Printf("SCORE: %s: %d", tag, count)
+		logger.Admin.Printf("  %s: %d", tag, count)
 	}
 
-	errCount := int64(0)
+	errorCount := int64(0)
 	timeoutCount := int64(0)
 	for _, err := range errors {
 		switch {
 		case model.IsErrCritical(err):
 			passed = false
-			reason = "fail: critical"
+			status = "fail: critical"
 		case model.IsErrTimeout(err):
 			timeoutCount++
 		default:
-			errCount += 1
+			errorCount += 1
 		}
 	}
-	deductionTotal := errCount*10 + timeoutCount/10
+	deductionTotal := errorCount*10 + timeoutCount/10
 
 	score := scoreRaw - deductionTotal
 	if score <= 0 && passed {
 		passed = false
-		reason = "fail: score"
+		status = "fail: score"
 	}
 
 	var scoreLogger *log.Logger
@@ -48,8 +52,11 @@ func CulcResult(result *isucandar.BenchmarkResult, finish bool) bool {
 		scoreLogger = logger.Admin
 	}
 
-	scoreLogger.Printf("score: %d(%d - %d) : %s", score, scoreRaw, deductionTotal, reason)
-	scoreLogger.Printf("deduction: %d / timeout: %d", errCount, timeoutCount)
+	scoreLogger.Print("")
+	scoreLogger.Printf("status:    %s", status)
+	scoreLogger.Printf("raw score: %d", scoreRaw)
+	scoreLogger.Printf("deduction: %d (error: %d / timeout: %d)", deductionTotal, errorCount, timeoutCount)
+	scoreLogger.Printf("score:     %d - %d = %d", scoreRaw, deductionTotal, score)
 
 	return passed
 }
