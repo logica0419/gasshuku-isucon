@@ -19,11 +19,11 @@ func (c *FlowController) memberGetFlow(memberID string, encrypt bool, step *isuc
 	return func(ctx context.Context) {
 		res, b, err := c.ma.GetMember(ctx, memberID, encrypt)
 		if model.IsErrTimeout(err) {
-			step.AddError(fmt.Errorf("GET /api/members: %w", failure.NewError(model.ErrTimeout, nil)))
+			step.AddError(fmt.Errorf("GET /api/member/%s: %w", memberID, failure.NewError(model.ErrTimeout, nil)))
 			return
 		}
 		if err != nil {
-			step.AddError(fmt.Errorf("GET /api/members: %w", failure.NewError(model.ErrRequestFailed, err)))
+			step.AddError(fmt.Errorf("GET /api/member/%s: %w", memberID, failure.NewError(model.ErrRequestFailed, err)))
 			return
 		}
 
@@ -40,7 +40,7 @@ func (c *FlowController) memberGetFlow(memberID string, encrypt bool, step *isuc
 				}),
 		)
 		if err != nil {
-			step.AddError(fmt.Errorf("GET /api/members: %w", err))
+			step.AddError(fmt.Errorf("GET /api/members/%s: %w",memberID, err))
 			return
 		}
 	}
