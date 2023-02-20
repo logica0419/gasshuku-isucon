@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"io"
 	"log"
 	"os"
 )
@@ -13,6 +14,7 @@ var (
 )
 
 func init() {
-	Contestant = log.New(os.Stdout, "", log.Ltime)
+	contestantWriter := io.MultiWriter(os.Stdout, os.Stderr)
+	Contestant = log.New(contestantWriter, "", log.Lmicroseconds)
 	Admin = log.New(os.Stderr, "[Admin] ", log.Lmicroseconds)
 }
