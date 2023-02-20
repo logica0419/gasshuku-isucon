@@ -30,7 +30,8 @@ type ActionController struct {
 }
 
 func NewActionController(c *config.Config) (*ActionController, error) {
-	initializeAgent, err := agent.NewAgent(agent.WithBaseURL(c.BaseURL), agent.WithDefaultTransport())
+	initializeAgent, err := agent.NewAgent(agent.WithBaseURL(c.BaseURL), agent.WithDefaultTransport(),
+		agent.WithTimeout(time.Duration(c.InitializeTimeout)*time.Millisecond))
 	if err != nil {
 		return nil, failure.NewError(model.ErrCritical, err)
 	}
@@ -40,14 +41,16 @@ func NewActionController(c *config.Config) (*ActionController, error) {
 	searchAgents := make([]utils.Choice[*agent.Agent], searchAgentsNum)
 
 	for i := 0; i < libAgentsNum; i++ {
-		libAgents[i].Val, err = agent.NewAgent(agent.WithBaseURL(c.BaseURL), agent.WithDefaultTransport())
+		libAgents[i].Val, err = agent.NewAgent(agent.WithBaseURL(c.BaseURL), agent.WithDefaultTransport(),
+			agent.WithTimeout(time.Duration(c.RequestTimeout)*time.Millisecond))
 		if err != nil {
 			return nil, failure.NewError(model.ErrCritical, err)
 		}
 		libAgents[i].Val.Name = fmt.Sprintf("Isulibrary-LibAgent-%d", i+1)
 	}
 	for i := 0; i < searchAgentsNum; i++ {
-		searchAgents[i].Val, err = agent.NewAgent(agent.WithBaseURL(c.BaseURL), agent.WithDefaultTransport())
+		searchAgents[i].Val, err = agent.NewAgent(agent.WithBaseURL(c.BaseURL), agent.WithDefaultTransport(),
+			agent.WithTimeout(time.Duration(c.RequestTimeout)*time.Millisecond))
 		if err != nil {
 			return nil, failure.NewError(model.ErrCritical, err)
 		}
