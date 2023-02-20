@@ -1,9 +1,14 @@
 package repository
 
-import "github.com/logica0419/gasshuku-isucon/bench/model"
+import (
+	"math/rand"
+
+	"github.com/logica0419/gasshuku-isucon/bench/model"
+)
 
 type MemberRepository interface {
 	GetMemberByID(id string) (*model.MemberWithLending, error)
+	GetRandomMember() *model.MemberWithLending
 	AddMembers(members []*model.MemberWithLending)
 }
 
@@ -19,6 +24,13 @@ func (r *Repository) GetMemberByID(id string) (*model.MemberWithLending, error) 
 	}
 
 	return v, nil
+}
+
+func (r *Repository) GetRandomMember() *model.MemberWithLending {
+	r.mLock.RLock()
+	defer r.mLock.RUnlock()
+
+	return r.memberSlice[rand.Intn(len(r.memberSlice))]
 }
 
 func (r *Repository) AddMembers(members []*model.MemberWithLending) {
