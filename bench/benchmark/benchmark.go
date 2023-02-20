@@ -2,17 +2,21 @@ package benchmark
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"github.com/isucon/isucandar"
+	"github.com/logica0419/gasshuku-isucon/bench/config"
+	"github.com/logica0419/gasshuku-isucon/bench/grader"
 	"github.com/logica0419/gasshuku-isucon/bench/scenario"
 )
 
 type Benchmark struct {
-	ib *isucandar.Benchmark
+	ib         *isucandar.Benchmark
+	exitStatus bool
 }
 
-func newBenchmark(s *scenario.Scenario) (*Benchmark, error) {
+func newBenchmark(c *config.Config, s *scenario.Scenario) (*Benchmark, error) {
 	ib, err := isucandar.NewBenchmark(
 		isucandar.WithLoadTimeout(scenario.BenchTime + time.Second*10),
 	)
@@ -23,7 +27,8 @@ func newBenchmark(s *scenario.Scenario) (*Benchmark, error) {
 	ib.AddScenario(s)
 
 	b := &Benchmark{
-		ib: ib,
+		ib:         ib,
+		exitStatus: c.ExitStatusOnFail,
 	}
 
 	registerErrorHandler(b)
@@ -32,5 +37,9 @@ func newBenchmark(s *scenario.Scenario) (*Benchmark, error) {
 }
 
 func (b *Benchmark) Run(ctx context.Context) {
-	_ = b.ib.Start(ctx)
+	res := b.ib.Start(ctx)
+
+	if !grader.CulcResult(res, true) && b.exitStatus {
+		os.Exit(1)
+	}
 }

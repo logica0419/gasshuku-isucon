@@ -35,7 +35,7 @@ func NewBenchmark(c chan worker.WorkerFunc) (*Benchmark, error) {
 		return nil, err
 	}
 	scenarioScenario := scenario.NewScenario(c, flowController)
-	benchmark, err := newBenchmark(scenarioScenario)
+	benchmark, err := newBenchmark(configConfig, scenarioScenario)
 	if err != nil {
 		return nil, err
 	}
