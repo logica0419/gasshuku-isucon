@@ -19,5 +19,7 @@ run-bench:
 	cd bench && go run *.go >/dev/null
 
 .PHONY: run-generator
-run-generator:
+run-generator: init-db
+	touch bench/repository/init_data.json
 	cd bench/repository/generator && go run *.go
+	@make dump-data
