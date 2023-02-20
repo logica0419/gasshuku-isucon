@@ -9,6 +9,7 @@ import (
 	"github.com/isucon/isucandar"
 	"github.com/isucon/isucandar/failure"
 	"github.com/logica0419/gasshuku-isucon/bench/action"
+	"github.com/logica0419/gasshuku-isucon/bench/grader"
 	"github.com/logica0419/gasshuku-isucon/bench/model"
 	"github.com/logica0419/gasshuku-isucon/bench/utils"
 	"github.com/logica0419/gasshuku-isucon/bench/validator"
@@ -116,5 +117,7 @@ func (c *FlowController) membersGetFlow(memberID string, step *isucandar.Benchma
 
 			page++
 		}
+
+		step.AddScore(grader.ScoreGetMembes)
 	}
 }
