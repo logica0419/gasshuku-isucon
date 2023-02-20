@@ -5,8 +5,12 @@ import (
 	"github.com/isucon/isucandar/score"
 )
 
-var ScoreGetMembes score.ScoreTag = "get_members"
+var (
+	ScoreGetMembers score.ScoreTag = "get_members"
+	ScoreGetMember  score.ScoreTag = "get_member"
+)
 
 func setScore(result *isucandar.BenchmarkResult) {
-	result.Score.Set(ScoreGetMembes, 1)
+	result.Score.Set(ScoreGetMembers, 5)
+	result.Score.Set(ScoreGetMember, 1)
 }

@@ -27,6 +27,7 @@ func (c *FlowController) LibraryFlow(step *isucandar.BenchmarkStep) worker.Worke
 				{Val: c.membersGetFlow("", step)},
 				{Val: c.membersGetFlow(utils.RandString(26), step), Weight: 2},
 				{Val: c.membersGetFlow(c.mr.GetRandomMember().ID, step), Weight: 2},
+				{Val: c.memberGetFlow(c.mr.GetRandomMember().ID, true, step), Weight: 4},
 			},
 		)
 		runner(ctx)

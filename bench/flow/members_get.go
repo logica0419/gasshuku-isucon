@@ -20,8 +20,7 @@ const memberPageLimit = 100
 func (c *FlowController) membersGetFlow(memberID string, step *isucandar.BenchmarkStep) flow {
 	findable := false
 	if memberID != "" {
-		_, err := c.mr.GetMemberByID(memberID)
-		if err == nil {
+		if _, err := c.mr.GetMemberByID(memberID); err == nil {
 			findable = true
 		}
 	}
@@ -118,6 +117,6 @@ func (c *FlowController) membersGetFlow(memberID string, step *isucandar.Benchma
 			page++
 		}
 
-		step.AddScore(grader.ScoreGetMembes)
+		step.AddScore(grader.ScoreGetMembers)
 	}
 }
