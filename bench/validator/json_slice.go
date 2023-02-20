@@ -17,7 +17,7 @@ type SliceJsonValidateOpt[V any] func(body []V) error
 func WithSliceJsonValidation[V comparable](opt ...SliceJsonValidateOpt[V]) ValidateOpt {
 	return func(res *http.Response) error {
 		var body []V
-		if err := utils.ReaderToStruct(res.Body, &body); err != nil {
+		if err := utils.DecodeJsonWithStandard(res.Body, &body); err != nil {
 			return failure.NewError(model.ErrUndecodableBody, err)
 		}
 

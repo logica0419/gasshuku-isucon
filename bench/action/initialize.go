@@ -2,7 +2,6 @@ package action
 
 import (
 	"context"
-	"io"
 	"net/http"
 
 	"github.com/isucon/isucandar/failure"
@@ -11,7 +10,7 @@ import (
 )
 
 type InitializeActionController interface {
-	Initialize(ctx context.Context, key string) (*http.Response, []byte, error)
+	Initialize(ctx context.Context, key string) (*http.Response, error)
 }
 
 type InitializeHandlerRequest struct {
@@ -23,35 +22,26 @@ type InitializeHandlerResponse struct {
 }
 
 // POST /api/initialize
-func (c *ActionController) Initialize(ctx context.Context, key string) (*http.Response, []byte, error) {
-	ctx, cancel := context.WithTimeout(ctx, c.initializeTimeout)
-	defer cancel()
-
+func (c *ActionController) Initialize(ctx context.Context, key string) (*http.Response, error) {
 	agent := c.initializeAgent
 
 	body, err := utils.EncodeJson(InitializeHandlerRequest{
 		Key: key,
 	})
 	if err != nil {
-		return nil, nil, failure.NewError(model.ErrCritical, err)
+		return nil, failure.NewError(model.ErrCritical, err)
 	}
 
 	req, err := agent.POST("/api/initialize", body)
 	if err != nil {
-		return nil, nil, failure.NewError(model.ErrCritical, err)
+		return nil, failure.NewError(model.ErrCritical, err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	res, err := agent.Do(ctx, req)
 	if err != nil {
-		return nil, nil, failure.NewError(model.ErrRequestFailed, err)
-	}
-	defer res.Body.Close()
-
-	b, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, nil, failure.NewError(model.ErrUndecodableBody, err)
+		return nil, err
 	}
 
-	return res, b, nil
+	return res, nil
 }

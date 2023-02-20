@@ -17,7 +17,7 @@ func (c *FlowController) memberGetFlow(memberID string, encrypt bool, step *isuc
 	}
 
 	return func(ctx context.Context) {
-		res, b, err := c.ma.GetMember(ctx, memberID, encrypt)
+		res, err := c.ma.GetMember(ctx, memberID, encrypt)
 		if model.IsErrTimeout(err) {
 			step.AddError(fmt.Errorf("GET /api/member/%s: %w", memberID, failure.NewError(model.ErrTimeout, nil)))
 			return
@@ -27,7 +27,7 @@ func (c *FlowController) memberGetFlow(memberID string, encrypt bool, step *isuc
 			return
 		}
 
-		err = validator.Validate(res, b,
+		err = validator.Validate(res,
 			validator.WithStatusCode(http.StatusOK),
 			validator.WithContentType("application/json"),
 			validator.WithJsonValidation(

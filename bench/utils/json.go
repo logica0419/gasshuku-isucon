@@ -23,9 +23,9 @@ func EncodeJson(s any) (io.Reader, error) {
 	return bytes.NewReader(b), nil
 }
 
-// []byteをJSONとしてデコード
+// io.ReaderをJSONとしてデコード
 //
 //	予期しないJSONが来る可能性があるので、標準パッケージでデコードする
-func DecodeJsonWithStandard(b []byte, s any) error {
-	return json.Unmarshal(b, s)
+func DecodeJsonWithStandard(r io.Reader, s any) error {
+	return json.NewDecoder(r).Decode(s)
 }

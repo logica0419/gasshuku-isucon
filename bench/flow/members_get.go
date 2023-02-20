@@ -46,7 +46,7 @@ func (c *FlowController) membersGetFlow(step *isucandar.BenchmarkStep) flow {
 				Order:        order,
 			}
 
-			res, b, err := c.ma.GetMembers(ctx, query)
+			res, err := c.ma.GetMembers(ctx, query)
 			if model.IsErrTimeout(err) {
 				step.AddError(fmt.Errorf("GET /api/members: %w", failure.NewError(model.ErrTimeout, nil)))
 				return
@@ -60,7 +60,7 @@ func (c *FlowController) membersGetFlow(step *isucandar.BenchmarkStep) flow {
 				break
 			}
 
-			err = validator.Validate(res, b,
+			err = validator.Validate(res,
 				validator.WithStatusCode(http.StatusOK),
 				validator.WithContentType("application/json"),
 				validator.WithJsonValidation(
