@@ -7,12 +7,20 @@ import (
 )
 
 type MemberRepository interface {
+	GetMemberTotal() int
 	GetMemberByID(id string) (*model.MemberWithLending, error)
 	GetRandomMember() *model.MemberWithLending
 	AddMembers(members []*model.MemberWithLending)
 }
 
 var _ MemberRepository = &Repository{}
+
+func (r *Repository) GetMemberTotal() int {
+	r.mLock.RLock()
+	defer r.mLock.RUnlock()
+
+	return len(r.memberSlice)
+}
 
 func (r *Repository) GetMemberByID(id string) (*model.MemberWithLending, error) {
 	r.mLock.RLock()

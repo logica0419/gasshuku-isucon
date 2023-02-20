@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/rand"
 	"net/http"
 
 	"github.com/isucon/isucandar"
@@ -17,7 +16,15 @@ import (
 
 const memberPageLimit = 100
 
-func (c *FlowController) membersGetFlow(step *isucandar.BenchmarkStep) flow {
+func (c *FlowController) membersGetFlow(memberID string, step *isucandar.BenchmarkStep) flow {
+	findable := false
+	if memberID != "" {
+		_, err := c.mr.GetMemberByID(memberID)
+		if err == nil {
+			findable = true
+		}
+	}
+
 	return func(ctx context.Context) {
 		page := 1
 		lastMemberID := ""
@@ -56,9 +63,11 @@ func (c *FlowController) membersGetFlow(step *isucandar.BenchmarkStep) flow {
 				return
 			}
 
-			if res.StatusCode == http.StatusNotFound && page > 1 {
+			if !findable && res.StatusCode == http.StatusNotFound && page > 1 {
 				break
 			}
+
+			found := false
 
 			err = validator.Validate(res,
 				validator.WithStatusCode(http.StatusOK),
@@ -68,6 +77,10 @@ func (c *FlowController) membersGetFlow(step *isucandar.BenchmarkStep) flow {
 						validator.SliceJsonLengthRange[model.Member](1, memberPageLimit),
 						validator.SliceJsonCheckOrder(idxFunc, ord),
 						validator.SliceJsonCheckEach(func(body model.Member) error {
+							if body.ID == memberID {
+								found = true
+							}
+
 							v, err := c.mr.GetMemberByID(body.ID)
 							if err != nil {
 								return failure.NewError(model.ErrInvalidBody, err)
@@ -94,7 +107,10 @@ func (c *FlowController) membersGetFlow(step *isucandar.BenchmarkStep) flow {
 				return
 			}
 
-			if rand.Intn(10) == 0 {
+			if found {
+				if !findable {
+					step.AddError(fmt.Errorf("GET /api/members: %w", failure.NewError(model.ErrInvalidBody, errors.New("found invalid member"))))
+				}
 				break
 			}
 
