@@ -16,7 +16,7 @@ run-go:
 
 .PHONY: run-bench
 run-bench:
-	cd bench && go run *.go
+	cd bench && go run *.go >/dev/null
 
 .PHONY: run-generator
 run-generator:
