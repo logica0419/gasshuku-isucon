@@ -5,8 +5,10 @@ import (
 	"time"
 
 	"github.com/isucon/isucandar"
+	"github.com/isucon/isucandar/failure"
 	"github.com/isucon/isucandar/worker"
 	"github.com/logica0419/gasshuku-isucon/bench/logger"
+	"github.com/logica0419/gasshuku-isucon/bench/model"
 )
 
 // ワーカーの初期起動用ワーカー
@@ -18,7 +20,11 @@ func (c *Controller) StartUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 		default:
 		}
 
-		mem := c.mr.GetInactiveMemberID(30)
+		mem, err := c.mr.GetInactiveMemberID(30)
+		if err != nil {
+			step.AddError(failure.NewError(model.ErrCritical, err))
+			return
+		}
 		for _, id := range mem {
 			w := c.baseMemberFlow(id, step)
 			c.wc <- w
@@ -64,7 +70,15 @@ func (c *Controller) ScaleUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 
 				if c.memInCycleCount > c.activeMemWorkerCount*4/5 && c.libInCycleCount > c.activeLibWorkerCount/5 {
 					join := int(c.activeMemWorkerCount / 5)
-					mem := c.mr.GetInactiveMemberID(join)
+					mem, err := c.mr.GetInactiveMemberID(join)
+					if err != nil {
+						c.memberPostFlow(join, step)(ctx)
+						mem, err = c.mr.GetInactiveMemberID(join)
+						if err != nil {
+							step.AddError(failure.NewError(model.ErrCritical, err))
+							return
+						}
+					}
 					for _, id := range mem {
 						w := c.baseMemberFlow(id, step)
 						c.wc <- w

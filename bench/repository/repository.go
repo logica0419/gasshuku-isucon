@@ -17,7 +17,10 @@ type InitData struct {
 	Books   []*model.BookWithLending   `json:"books"`
 }
 
-var ErrNotFound = errors.New("not found")
+var (
+	ErrNotFound         = errors.New("not found")
+	ErrNotEnoughRecords = errors.New("not enough records")
+)
 
 type Repository struct {
 	mLock            sync.RWMutex

@@ -7,7 +7,7 @@ import (
 )
 
 type MemberRepository interface {
-	GetInactiveMemberID(num int) []string
+	GetInactiveMemberID(num int) ([]string, error)
 
 	GetMemberTotal() int
 	GetMemberByID(id string) (*model.MemberWithLending, error)
@@ -17,19 +17,17 @@ type MemberRepository interface {
 
 var _ MemberRepository = &Repository{}
 
-func (r *Repository) GetInactiveMemberID(num int) []string {
+func (r *Repository) GetInactiveMemberID(num int) ([]string, error) {
 	r.mLock.Lock()
 	defer r.mLock.Unlock()
 
-	if len(r.inactiveMemberID) > num {
-		mem := r.inactiveMemberID[:num]
-		r.inactiveMemberID = r.inactiveMemberID[num:]
-		return mem
-	} else {
-		mem := r.inactiveMemberID[:]
-		r.inactiveMemberID = r.inactiveMemberID[:0]
-		return mem
+	if len(r.inactiveMemberID) < num {
+		return nil, ErrNotEnoughRecords
 	}
+
+	mem := r.inactiveMemberID[:num]
+	r.inactiveMemberID = r.inactiveMemberID[num:]
+	return mem, nil
 }
 
 func (r *Repository) GetMemberTotal() int {
