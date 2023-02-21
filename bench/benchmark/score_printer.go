@@ -18,7 +18,7 @@ func registerScorePrinter(b *Benchmark) {
 
 				select {
 				case <-ticker.C:
-					_ = grader.CulcResult(step.Result(), false)
+					_ = grader.CalcResult(step.Result(), false)
 				case <-ctx.Done():
 					return nil
 				}

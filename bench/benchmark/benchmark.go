@@ -40,7 +40,7 @@ func newBenchmark(c *config.Config, s *scenario.Scenario) (*Benchmark, error) {
 func (b *Benchmark) Run(ctx context.Context) {
 	res := b.ib.Start(ctx)
 
-	if !grader.CulcResult(res, true) && b.exitStatus {
+	if !grader.CalcResult(res, true) && b.exitStatus {
 		os.Exit(1)
 	}
 }

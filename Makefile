@@ -1,10 +1,10 @@
 .PHONY: dump-schema
 dump-schema:
-	mysqldump isulibrary -d | grep -v "/\*" | grep -v "\-\-"> webapp/sql/0_schema.sql
+	mysqldump isulibrary -d | grep -v "/\*" | grep -v "\-\-" >webapp/sql/0_schema.sql
 
 .PHONY: dump-data
 dump-data:
-	mysqldump isulibrary -t | grep -v "/\*" | grep -v "\-\-" | grep -v LOCK | grep -v '^s*$$'> webapp/sql/1_data.sql
+	mysqldump isulibrary -t | grep -v "/\*" | grep -v "\-\-" | grep -v LOCK | grep -v '^s*$$' >webapp/sql/1_data.sql
 
 .PHONY: init-db
 init-db:
@@ -16,7 +16,7 @@ run-go:
 
 .PHONY: run-bench
 run-bench:
-	cd bench && go run main.go wire_gen.go >/dev/null
+	cd bench && go run main.go >/dev/null
 
 .PHONY: run-generator
 run-generator: init-db

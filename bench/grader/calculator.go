@@ -8,7 +8,7 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/model"
 )
 
-func CulcResult(result *isucandar.BenchmarkResult, finish bool) bool {
+func CalcResult(result *isucandar.BenchmarkResult, finish bool) bool {
 	logger.Admin.Print("")
 	logger.Admin.Print("---------Bench Result---------")
 
