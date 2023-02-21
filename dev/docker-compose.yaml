@@ -17,11 +17,6 @@ services:
       - ./my.cnf:/etc/mysql/conf.d/my.cnf
     depends_on:
       - db
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: 1024m
 
   db:
     container_name: gasshuku-isucon-db
@@ -38,7 +33,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.5"
+          cpus: "1"
           memory: 1024m
 
 volumes:
