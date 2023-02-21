@@ -20,7 +20,7 @@ func (c *Controller) StartUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 		default:
 		}
 
-		mem, err := c.mr.GetInactiveMemberID(30)
+		mem, err := c.mr.GetInactiveMemberID(10)
 		if err != nil {
 			step.AddError(failure.NewError(model.ErrCritical, err))
 			return

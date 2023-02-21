@@ -7,7 +7,6 @@ import (
 
 	"github.com/isucon/isucandar"
 	"github.com/isucon/isucandar/failure"
-	"github.com/logica0419/gasshuku-isucon/bench/grader"
 	"github.com/logica0419/gasshuku-isucon/bench/model"
 	"github.com/logica0419/gasshuku-isucon/bench/validator"
 )
@@ -64,7 +63,5 @@ func (c *Controller) memberGetFlow(memberID string, encrypt bool, step *isucanda
 				return
 			}
 		}
-
-		step.AddScore(grader.ScoreGetMember)
 	}
 }
