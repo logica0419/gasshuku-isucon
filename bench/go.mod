@@ -12,6 +12,7 @@ require (
 	github.com/logica0419/helpisu v0.11.0
 	github.com/mattn/go-gimei v0.0.3
 	github.com/oklog/ulid/v2 v2.1.0
+	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.15.0
 	golang.org/x/exp v0.0.0-20230213192124-5e25df0256eb
 )
@@ -35,7 +36,6 @@ require (
 	github.com/spf13/afero v1.9.3 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
