@@ -20,9 +20,10 @@ type InitData struct {
 var ErrNotFound = errors.New("not found")
 
 type Repository struct {
-	mLock       sync.RWMutex
-	memberSlice []*model.MemberWithLending
-	memberMap   map[string]*model.MemberWithLending
+	mLock            sync.RWMutex
+	memberSlice      []*model.MemberWithLending
+	memberMap        map[string]*model.MemberWithLending
+	inactiveMemberID []string
 }
 
 func NewRepository() (*Repository, error) {

@@ -7,6 +7,8 @@ import (
 )
 
 type MemberRepository interface {
+	GetInactiveMemberID(num int) []string
+
 	GetMemberTotal() int
 	GetMemberByID(id string) (*model.MemberWithLending, error)
 	GetRandomMember() *model.MemberWithLending
@@ -14,6 +16,21 @@ type MemberRepository interface {
 }
 
 var _ MemberRepository = &Repository{}
+
+func (r *Repository) GetInactiveMemberID(num int) []string {
+	r.mLock.Lock()
+	defer r.mLock.Unlock()
+
+	if len(r.inactiveMemberID) > num {
+		mem := r.inactiveMemberID[:num]
+		r.inactiveMemberID = r.inactiveMemberID[num:]
+		return mem
+	} else {
+		mem := r.inactiveMemberID[:]
+		r.inactiveMemberID = r.inactiveMemberID[:0]
+		return mem
+	}
+}
 
 func (r *Repository) GetMemberTotal() int {
 	r.mLock.RLock()
@@ -48,5 +65,6 @@ func (r *Repository) AddMembers(members []*model.MemberWithLending) {
 	r.memberSlice = append(r.memberSlice, members...)
 	for _, m := range members {
 		r.memberMap[m.ID] = m
+		r.inactiveMemberID = append(r.inactiveMemberID, m.ID)
 	}
 }

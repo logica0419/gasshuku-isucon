@@ -9,10 +9,10 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/utils"
 )
 
-const libraryFlowCycle = 50 * time.Millisecond
+const libraryFlowCycle = 500 * time.Millisecond
 
 // 図書館職員フロー
-func (c *FlowController) LibraryFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
+func (c *FlowController) libraryFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
 	return func(ctx context.Context, _ int) {
 		select {
 		case <-ctx.Done():
