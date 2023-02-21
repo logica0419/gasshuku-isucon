@@ -28,6 +28,8 @@ func CulcResult(result *isucandar.BenchmarkResult, finish bool) bool {
 	timeoutCount := int64(0)
 	for _, err := range errors {
 		switch {
+		case model.IsErrCanceled(err):
+			continue
 		case model.IsErrCritical(err):
 			passed = false
 			status = "fail: critical"

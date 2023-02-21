@@ -45,6 +45,7 @@ func IsErrTimeout(err error) bool {
 }
 
 func IsErrCanceled(err error) bool {
-	return failure.IsCode(err, failure.CanceledErrorCode) ||
+	return failure.IsCode(err, ErrDeadline) ||
+		failure.IsCode(err, failure.CanceledErrorCode) ||
 		failure.Is(err, context.DeadlineExceeded)
 }
