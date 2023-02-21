@@ -27,13 +27,22 @@ type Repository struct {
 	memberSlice      []*model.MemberWithLending
 	memberMap        map[string]*model.MemberWithLending
 	inactiveMemberID []string
+
+	bLock     sync.RWMutex
+	bookSlice []*model.BookWithLending
+	bookMap   map[string]*model.BookWithLending
 }
 
 func NewRepository() (*Repository, error) {
 	r := &Repository{
-		mLock:       sync.RWMutex{},
-		memberSlice: []*model.MemberWithLending{},
-		memberMap:   map[string]*model.MemberWithLending{},
+		mLock:            sync.RWMutex{},
+		memberSlice:      []*model.MemberWithLending{},
+		memberMap:        map[string]*model.MemberWithLending{},
+		inactiveMemberID: []string{},
+
+		bLock:     sync.RWMutex{},
+		bookSlice: []*model.BookWithLending{},
+		bookMap:   map[string]*model.BookWithLending{},
 	}
 
 	var data InitData
@@ -42,6 +51,7 @@ func NewRepository() (*Repository, error) {
 	}
 
 	r.AddMembers(data.Members)
+	r.AddBooks(data.Books)
 
 	return r, nil
 }
