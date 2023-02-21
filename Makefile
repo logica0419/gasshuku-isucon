@@ -31,3 +31,7 @@ up:
 .PHONY: down
 down:
 	cd dev && docker compose down
+
+.PHONY: compose-log
+compose-log:
+	cd dev && docker compose logs -f backend
