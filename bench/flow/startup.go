@@ -18,12 +18,12 @@ func (c *FlowController) StartUpFlow(step *isucandar.BenchmarkStep) worker.Worke
 
 		mem := c.mr.GetInactiveMemberID(10)
 		for _, id := range mem {
-			w := c.memberFlow(id, step)
+			w := c.baseMemberFlow(id, step)
 			c.wc <- w
 		}
 
 		for i := 0; i < 10; i++ {
-			w := c.libraryFlow(step)
+			w := c.baseLibraryFlow(step)
 			c.wc <- w
 		}
 	}

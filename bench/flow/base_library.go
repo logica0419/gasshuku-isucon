@@ -9,10 +9,10 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/utils"
 )
 
-const memberFlowCycle = 500 * time.Millisecond
+const libraryFlowCycle = 500 * time.Millisecond
 
 // 図書館職員フロー
-func (c *FlowController) memberFlow(memberID string, step *isucandar.BenchmarkStep) worker.WorkerFunc {
+func (c *FlowController) baseLibraryFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
 	return func(ctx context.Context, _ int) {
 		select {
 		case <-ctx.Done():
@@ -20,11 +20,13 @@ func (c *FlowController) memberFlow(memberID string, step *isucandar.BenchmarkSt
 		default:
 		}
 
-		timer := time.After(memberFlowCycle)
+		timer := time.After(libraryFlowCycle)
 
 		runner := utils.WeightedSelect(
 			[]utils.Choice[flow]{
-				{Val: c.memberGetFlow(memberID, true, step)},
+				{Val: c.membersGetFlow("", step)},
+				{Val: c.membersGetFlow(utils.RandString(26), step), Weight: 2},
+				{Val: c.membersGetFlow(c.mr.GetRandomMember().ID, step), Weight: 2},
 			},
 		)
 		runner(ctx)
@@ -37,7 +39,7 @@ func (c *FlowController) memberFlow(memberID string, step *isucandar.BenchmarkSt
 		default:
 		}
 
-		c.addMemInCycleCount()
+		c.addLibInCycleCount()
 
 		select {
 		case <-ctx.Done():

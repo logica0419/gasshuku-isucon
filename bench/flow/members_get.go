@@ -54,12 +54,8 @@ func (c *FlowController) membersGetFlow(memberID string, step *isucandar.Benchma
 			}
 
 			res, err := c.ma.GetMembers(ctx, query)
-			if model.IsErrTimeout(err) {
-				step.AddError(fmt.Errorf("GET /api/members: %w", failure.NewError(model.ErrTimeout, nil)))
-				return
-			}
 			if err != nil {
-				step.AddError(fmt.Errorf("GET /api/members: %w", failure.NewError(model.ErrRequestFailed, err)))
+				step.AddError(fmt.Errorf("GET /api/members: %w", err))
 				return
 			}
 

@@ -9,6 +9,9 @@ import (
 )
 
 var (
+	// ベンチマーク終了後のタイムアウト
+	ErrDeadline failure.StringCode = "critical"
+
 	// 予期しないクリティカルなエラー
 	ErrCritical failure.StringCode = "critical"
 
