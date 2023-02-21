@@ -4,7 +4,7 @@ dump-schema:
 
 .PHONY: dump-data
 dump-data:
-	mysqldump isulibrary -t | grep -v "/\*" | grep -v "\-\-" | grep -v LOCK> webapp/sql/1_data.sql
+	mysqldump isulibrary -t | grep -v "/\*" | grep -v "\-\-" | grep -v LOCK | grep -v '^s*$$'> webapp/sql/1_data.sql
 
 .PHONY: init-db
 init-db:
@@ -23,3 +23,11 @@ run-generator: init-db
 	touch bench/repository/init_data.json
 	cd bench/repository/generator && go run *.go
 	@make dump-data
+
+.PHONY: up
+up:
+	cd dev && docker compose up -d
+
+.PHONY: down
+down:
+	cd dev && docker compose down

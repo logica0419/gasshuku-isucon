@@ -1,0 +1,45 @@
+version: "3"
+
+services:
+  backend:
+    container_name: gasshuku-isucon-back
+    build:
+      context: ..
+      dockerfile: dev/Dockerfile
+    restart: always
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASS=password
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./my.cnf:/etc/mysql/conf.d/my.cnf
+    depends_on:
+      - db
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 1024m
+
+  db:
+    container_name: gasshuku-isucon-db
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: isulibrary
+    ports:
+      - "3306:3306"
+    volumes:
+      - db:/var/lib/mysql
+      - ./my.cnf:/etc/mysql/conf.d/my.cnf
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 1024m
+
+volumes:
+  db: null
