@@ -14,6 +14,7 @@ type MemberController interface {
 	PostMember(ctx context.Context, body PostMemberRequest) (*http.Response, error)
 	GetMembers(ctx context.Context, query GetMembersQuery) (*http.Response, error)
 	GetMember(ctx context.Context, id string, encrypted bool) (*http.Response, error)
+	GetMemberQRCode(ctx context.Context, id string) (*http.Response, error)
 }
 
 var _ MemberController = &Controller{}
@@ -97,6 +98,23 @@ func (c *Controller) GetMember(ctx context.Context, id string, encrypted bool) (
 	}
 
 	req, err := agent.GET(url)
+	if err != nil {
+		return nil, failure.NewError(model.ErrCritical, err)
+	}
+
+	res, err := agent.Do(ctx, req)
+	if err != nil {
+		return nil, processErr(ctx, err)
+	}
+
+	return res, nil
+}
+
+// GET /api/members/:id/qrcode
+func (c *Controller) GetMemberQRCode(ctx context.Context, id string) (*http.Response, error) {
+	agent := c.libAgent()
+
+	req, err := agent.GET("/api/members/" + id + "/qrcode")
 	if err != nil {
 		return nil, failure.NewError(model.ErrCritical, err)
 	}

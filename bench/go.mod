@@ -10,6 +10,7 @@ require (
 	github.com/isucon/isucandar v0.0.0-20220322062028-6dd56dc57d72
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/logica0419/helpisu v0.11.0
+	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/mattn/go-gimei v0.0.3
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/spf13/pflag v1.0.5

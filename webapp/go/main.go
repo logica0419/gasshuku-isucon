@@ -316,7 +316,7 @@ func postMemberHandler(c echo.Context) error {
 
 	_ = tx.Commit()
 
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusCreated, res)
 }
 
 const memberPageLimit = 100
