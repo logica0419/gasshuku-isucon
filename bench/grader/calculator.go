@@ -56,9 +56,13 @@ func CalcResult(result *isucandar.BenchmarkResult, finish bool) bool {
 
 	scoreLogger.Print("")
 	scoreLogger.Printf("status:    %s", status)
-	scoreLogger.Printf("raw score: %d", scoreRaw)
-	scoreLogger.Printf("deduction: %d (error: %d / timeout: %d)", deductionTotal, errorCount, timeoutCount)
-	scoreLogger.Printf("score:     %d - %d = %d", scoreRaw, deductionTotal, score)
+	if passed {
+		scoreLogger.Printf("raw score: %d", scoreRaw)
+		scoreLogger.Printf("deduction: %d (error: %d / timeout: %d)", deductionTotal, errorCount, timeoutCount)
+		scoreLogger.Printf("score:     %d - %d = %d", scoreRaw, deductionTotal, score)
+	} else {
+		scoreLogger.Print("score:     0")
+	}
 
 	return passed
 }
