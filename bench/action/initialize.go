@@ -9,7 +9,7 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/utils"
 )
 
-type InitializeActionController interface {
+type InitializeController interface {
 	Initialize(ctx context.Context, key string) (*http.Response, error)
 }
 
@@ -22,7 +22,7 @@ type InitializeHandlerResponse struct {
 }
 
 // POST /api/initialize
-func (c *ActionController) Initialize(ctx context.Context, key string) (*http.Response, error) {
+func (c *Controller) Initialize(ctx context.Context, key string) (*http.Response, error) {
 	agent := c.initializeAgent
 
 	body, err := utils.EncodeJson(InitializeHandlerRequest{

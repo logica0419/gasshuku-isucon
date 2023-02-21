@@ -12,7 +12,7 @@ import (
 const memberFlowCycle = 500 * time.Millisecond
 
 // 会員フロー
-func (c *FlowController) baseMemberFlow(memberID string, step *isucandar.BenchmarkStep) worker.WorkerFunc {
+func (c *Controller) baseMemberFlow(memberID string, step *isucandar.BenchmarkStep) worker.WorkerFunc {
 	return func(ctx context.Context, _ int) {
 		select {
 		case <-ctx.Done():

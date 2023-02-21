@@ -13,7 +13,7 @@ import (
 
 var langList = []string{"Go"}
 
-func (c *FlowController) InitializeFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
+func (c *Controller) InitializeFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
 	return func(ctx context.Context, _ int) {
 		res, err := c.ia.Initialize(ctx, c.key)
 		if err != nil {

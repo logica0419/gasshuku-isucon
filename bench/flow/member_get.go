@@ -12,7 +12,7 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/validator"
 )
 
-func (c *FlowController) memberGetFlow(memberID string, encrypt bool, step *isucandar.BenchmarkStep) flow {
+func (c *Controller) memberGetFlow(memberID string, encrypt bool, step *isucandar.BenchmarkStep) flow {
 	if memberID == "" {
 		step.AddError(fmt.Errorf("GET /api/member/:id: %w", failure.NewError(model.ErrCritical, fmt.Errorf("memberID is empty"))))
 	}

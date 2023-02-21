@@ -20,7 +20,7 @@ const (
 // Actionパッケージ内でしか使わないものを管理する構造体
 //
 //	Agentsは初期化以降ReadOnlyなため、ロックを取る機構は用意していない
-type ActionController struct {
+type Controller struct {
 	initializeAgent *agent.Agent
 
 	initializeTimeout time.Duration
@@ -30,7 +30,7 @@ type ActionController struct {
 	searchAgents []utils.Choice[*agent.Agent]
 }
 
-func NewActionController(c *config.Config) (*ActionController, error) {
+func NewController(c *config.Config) (*Controller, error) {
 	initializeAgent, err := agent.NewAgent(agent.WithBaseURL(c.BaseURL), agent.WithDefaultTransport(),
 		agent.WithTimeout(time.Duration(c.InitializeTimeout)*time.Millisecond))
 	if err != nil {
@@ -58,7 +58,7 @@ func NewActionController(c *config.Config) (*ActionController, error) {
 		searchAgents[i].Val.Name = fmt.Sprintf("Isulibrary-SearchAgent-%d", i+1)
 	}
 
-	return &ActionController{
+	return &Controller{
 		initializeAgent:   initializeAgent,
 		initializeTimeout: time.Duration(c.InitializeTimeout) * time.Millisecond,
 		requestTimeout:    time.Duration(c.RequestTimeout) * time.Millisecond,
@@ -67,11 +67,11 @@ func NewActionController(c *config.Config) (*ActionController, error) {
 	}, nil
 }
 
-func (c *ActionController) libAgent() *agent.Agent {
+func (c *Controller) libAgent() *agent.Agent {
 	return utils.WeightedSelect(c.libAgents)
 }
 
-func (c *ActionController) searchAgent() *agent.Agent {
+func (c *Controller) searchAgent() *agent.Agent {
 	return utils.WeightedSelect(c.searchAgents)
 }
 

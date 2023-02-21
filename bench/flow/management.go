@@ -10,7 +10,7 @@ import (
 )
 
 // ワーカーの初期起動用ワーカー
-func (c *FlowController) StartUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
+func (c *Controller) StartUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
 	return func(ctx context.Context, _ int) {
 		select {
 		case <-ctx.Done():
@@ -36,7 +36,7 @@ func (c *FlowController) StartUpFlow(step *isucandar.BenchmarkStep) worker.Worke
 const checkerCycle = 10 * time.Millisecond
 
 // ワーカーの追加ワーカー
-func (c *FlowController) ScaleUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
+func (c *Controller) ScaleUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
 	return func(ctx context.Context, _ int) {
 		baseTicker := time.NewTicker(checkerCycle)
 		memberTicker := time.NewTicker(memberFlowCycle)

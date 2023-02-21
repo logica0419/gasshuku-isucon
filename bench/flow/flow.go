@@ -12,7 +12,7 @@ import (
 
 type flow func(ctx context.Context)
 
-type FlowController struct {
+type Controller struct {
 	wc chan<- worker.WorkerFunc
 
 	key string
@@ -24,25 +24,25 @@ type FlowController struct {
 	activeMemWorkerCount uint32
 	activeLibWorkerCount uint32
 
-	ia action.InitializeActionController
-	ma action.MemberActionController
+	ia action.InitializeController
+	ma action.MemberController
 
 	mr repository.MemberRepository
 }
 
-func NewFlowController(
+func NewController(
 	c chan worker.WorkerFunc,
-	ia action.InitializeActionController,
-	ma action.MemberActionController,
+	ia action.InitializeController,
+	ma action.MemberController,
 	mr repository.MemberRepository,
-) (*FlowController, error) {
+) (*Controller, error) {
 	key := utils.RandStringWithSign(16)
 	cr, err := utils.NewCrypt(key)
 	if err != nil {
 		return nil, err
 	}
 
-	return &FlowController{
+	return &Controller{
 		wc:              c,
 		key:             key,
 		cr:              cr,
@@ -53,26 +53,26 @@ func NewFlowController(
 	}, nil
 }
 
-func (c *FlowController) addLibInCycleCount() {
+func (c *Controller) addLibInCycleCount() {
 	atomic.AddUint32(&c.libInCycleCount, 1)
 }
 
-func (c *FlowController) resetLibInCycleCount() {
+func (c *Controller) resetLibInCycleCount() {
 	atomic.StoreUint32(&c.libInCycleCount, 0)
 }
 
-func (c *FlowController) addMemInCycleCount() {
+func (c *Controller) addMemInCycleCount() {
 	atomic.AddUint32(&c.memInCycleCount, 1)
 }
 
-func (c *FlowController) resetMemInCycleCount() {
+func (c *Controller) resetMemInCycleCount() {
 	atomic.StoreUint32(&c.memInCycleCount, 0)
 }
 
-func (c *FlowController) addActiveMemWorkerCount() {
+func (c *Controller) addActiveMemWorkerCount() {
 	atomic.AddUint32(&c.activeMemWorkerCount, 1)
 }
 
-func (c *FlowController) addActiveLibWorkerCount() {
+func (c *Controller) addActiveLibWorkerCount() {
 	atomic.AddUint32(&c.activeLibWorkerCount, 1)
 }

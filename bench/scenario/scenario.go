@@ -8,7 +8,7 @@ import (
 
 type Scenario struct {
 	wc <-chan worker.WorkerFunc
-	fc *flow.FlowController
+	fc *flow.Controller
 }
 
 var (
@@ -16,7 +16,7 @@ var (
 	_ isucandar.LoadScenario    = &Scenario{}
 )
 
-func NewScenario(wc chan worker.WorkerFunc, fc *flow.FlowController) *Scenario {
+func NewScenario(wc chan worker.WorkerFunc, fc *flow.Controller) *Scenario {
 	return &Scenario{
 		wc: wc,
 		fc: fc,

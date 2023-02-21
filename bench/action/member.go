@@ -10,13 +10,13 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/utils"
 )
 
-type MemberActionController interface {
+type MemberController interface {
 	PostMember(ctx context.Context, body PostMemberRequest) (*http.Response, error)
 	GetMembers(ctx context.Context, query GetMembersQuery) (*http.Response, error)
 	GetMember(ctx context.Context, id string, encrypted bool) (*http.Response, error)
 }
 
-var _ MemberActionController = &ActionController{}
+var _ MemberController = &Controller{}
 
 type PostMemberRequest struct {
 	Name        string `json:"name"`
@@ -25,7 +25,7 @@ type PostMemberRequest struct {
 }
 
 // POST /api/members
-func (c *ActionController) PostMember(ctx context.Context, body PostMemberRequest) (*http.Response, error) {
+func (c *Controller) PostMember(ctx context.Context, body PostMemberRequest) (*http.Response, error) {
 	reader, err := utils.EncodeJson(body)
 	if err != nil {
 		return nil, failure.NewError(model.ErrCritical, err)
@@ -59,7 +59,7 @@ type GetMembersResponse struct {
 }
 
 // GET /api/members
-func (c *ActionController) GetMembers(ctx context.Context, query GetMembersQuery) (*http.Response, error) {
+func (c *Controller) GetMembers(ctx context.Context, query GetMembersQuery) (*http.Response, error) {
 	agent := c.libAgent()
 
 	url := "/api/members?"
@@ -88,7 +88,7 @@ func (c *ActionController) GetMembers(ctx context.Context, query GetMembersQuery
 }
 
 // GET /api/members/:id
-func (c *ActionController) GetMember(ctx context.Context, id string, encrypted bool) (*http.Response, error) {
+func (c *Controller) GetMember(ctx context.Context, id string, encrypted bool) (*http.Response, error) {
 	agent := c.libAgent()
 
 	url := "/api/members/" + id

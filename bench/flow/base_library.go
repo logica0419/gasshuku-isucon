@@ -12,7 +12,7 @@ import (
 const libraryFlowCycle = 1000 * time.Millisecond
 
 // 図書館職員フロー
-func (c *FlowController) baseLibraryFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
+func (c *Controller) baseLibraryFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
 	return func(ctx context.Context, _ int) {
 		select {
 		case <-ctx.Done():
