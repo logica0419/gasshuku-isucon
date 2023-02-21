@@ -16,7 +16,7 @@ type Benchmark struct {
 	exitStatus bool
 }
 
-func NewBenchmark(c *config.Config, s *scenario.Scenario) (*Benchmark, error) {
+func newBenchmark(c *config.Config, s *scenario.Scenario) (*Benchmark, error) {
 	ib, err := isucandar.NewBenchmark(
 		isucandar.WithLoadTimeout(scenario.BenchTime + time.Second*1),
 	)
