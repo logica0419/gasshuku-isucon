@@ -11,6 +11,7 @@ import (
 
 type BookController interface {
 	PostBooks(ctx context.Context, body []PostBooksRequest) (*http.Response, error)
+	GetBooks(ctx context.Context, query GetBooksQuery) (*http.Response, error)
 	GetBookQRCode(ctx context.Context, id string) (*http.Response, error)
 }
 
@@ -36,6 +37,63 @@ func (c *Controller) PostBooks(ctx context.Context, body []PostBooksRequest) (*h
 		return nil, failure.NewError(model.ErrCritical, err)
 	}
 	req.Header.Set("Content-Type", "application/json")
+
+	res, err := agent.Do(ctx, req)
+	if err != nil {
+		return nil, processErr(ctx, err)
+	}
+
+	return res, nil
+}
+
+type GetBooksQuery struct {
+	Title  string
+	Author string
+	Genre  model.Genre
+}
+
+// GET /api/members
+func (c *Controller) GetBooks(ctx context.Context, query GetBooksQuery) (*http.Response, error) {
+	agent := c.searchAgent()
+
+	url := "/api/books"
+	if query.Title != "" {
+		url += "?title=" + query.Title + "&"
+	}
+	if query.Author != "" {
+		url += "?author=" + query.Author + "&"
+	}
+	if query.Genre >= 0 {
+		url += "?genre=" + query.Genre.String() + "&"
+	}
+	url = url[:len(url)-1] // 最後の一文字(?か&)を削除する
+
+	req, err := agent.GET(url)
+	if err != nil {
+		return nil, failure.NewError(model.ErrCritical, err)
+	}
+
+	res, err := agent.Do(ctx, req)
+	if err != nil {
+		return nil, processErr(ctx, err)
+	}
+
+	return res, nil
+}
+
+// GET /api/members/:id
+func (c *Controller) GetBook(ctx context.Context, id string, encrypted bool) (*http.Response, error) {
+	agent := c.libAgent()
+
+	url := "/api/books/" + id
+	if encrypted {
+		url += "?encrypted=true"
+	}
+
+	req, err := agent.GET(url)
+	if err != nil {
+		return nil, failure.NewError(model.ErrCritical, err)
+	}
 
 	res, err := agent.Do(ctx, req)
 	if err != nil {

@@ -2,6 +2,7 @@ package model
 
 import (
 	"math/rand"
+	"strconv"
 	"strings"
 	"time"
 
@@ -24,6 +25,10 @@ const (
 	Literature                   // 言語・文学
 	Geography                    // 地理・歴史
 )
+
+func (g Genre) String() string {
+	return strconv.Itoa(int(g))
+}
 
 type Book struct {
 	ID        string    `json:"id" db:"id"`
