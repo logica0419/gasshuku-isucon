@@ -18,6 +18,7 @@ type FlowController struct {
 	key string
 	cr  *utils.Crypt
 
+	memInCycleCount uint32
 	libInCycleCount uint32
 
 	ia action.InitializeActionController
@@ -51,4 +52,8 @@ func NewFlowController(
 
 func (c *FlowController) addLibInCycleCount() {
 	atomic.AddUint32(&c.libInCycleCount, 1)
+}
+
+func (c *FlowController) addMemInCycleCount() {
+	atomic.AddUint32(&c.memInCycleCount, 1)
 }
