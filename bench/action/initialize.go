@@ -40,7 +40,7 @@ func (c *ActionController) Initialize(ctx context.Context, key string) (*http.Re
 
 	res, err := agent.Do(ctx, req)
 	if err != nil {
-		return nil, err
+		return nil, processErr(ctx, err)
 	}
 
 	return res, nil

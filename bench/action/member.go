@@ -41,7 +41,7 @@ func (c *ActionController) PostMember(ctx context.Context, body PostMemberReques
 
 	res, err := agent.Do(ctx, req)
 	if err != nil {
-		return nil, failure.NewError(model.ErrRequestFailed, err)
+		return nil, processErr(ctx, err)
 	}
 
 	return res, nil
@@ -81,7 +81,7 @@ func (c *ActionController) GetMembers(ctx context.Context, query GetMembersQuery
 
 	res, err := agent.Do(ctx, req)
 	if err != nil {
-		return nil, err
+		return nil, processErr(ctx, err)
 	}
 
 	return res, nil
@@ -103,7 +103,7 @@ func (c *ActionController) GetMember(ctx context.Context, id string, encrypted b
 
 	res, err := agent.Do(ctx, req)
 	if err != nil {
-		return nil,  err
+		return nil, processErr(ctx, err)
 	}
 
 	return res, nil

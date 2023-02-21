@@ -1,6 +1,7 @@
 package action
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -72,4 +73,16 @@ func (c *ActionController) libAgent() *agent.Agent {
 
 func (c *ActionController) searchAgent() *agent.Agent {
 	return utils.WeightedSelect(c.searchAgents)
+}
+
+func processErr(ctx context.Context, err error) error {
+	select {
+	case <-ctx.Done():
+		return failure.NewError(model.ErrDeadline, err)
+	default:
+		if model.IsErrTimeout(err) {
+			return failure.NewError(model.ErrTimeout, err)
+		}
+		return failure.NewError(model.ErrRequestFailed, err)
+	}
 }
