@@ -10,6 +10,10 @@ dump-data:
 init-db:
 	sh webapp/sql/init_db.sh
 
+.PHONY: go-gen
+go-gen:
+	cd bench && go generate ./...
+
 .PHONY: run-go
 run-go:
 	cd webapp/go && go run *.go

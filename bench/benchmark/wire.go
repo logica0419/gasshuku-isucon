@@ -19,10 +19,12 @@ func NewBenchmark(c chan worker.WorkerFunc) (*Benchmark, error) {
 
 		repository.NewRepository,
 		wire.Bind(new(repository.MemberRepository), new(*repository.Repository)),
+		wire.Bind(new(repository.BookRepository), new(*repository.Repository)),
 
 		action.NewController,
-		wire.Bind(new(action.MemberController), new(*action.Controller)),
 		wire.Bind(new(action.InitializeController), new(*action.Controller)),
+		wire.Bind(new(action.MemberController), new(*action.Controller)),
+		wire.Bind(new(action.BookController), new(*action.Controller)),
 
 		flow.NewController,
 

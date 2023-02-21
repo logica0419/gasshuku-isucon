@@ -30,7 +30,7 @@ func NewBenchmark(c chan worker.WorkerFunc) (*Benchmark, error) {
 	if err != nil {
 		return nil, err
 	}
-	flowController, err := flow.NewController(c, controller, controller, repositoryRepository)
+	flowController, err := flow.NewController(c, controller, controller, controller, repositoryRepository, repositoryRepository)
 	if err != nil {
 		return nil, err
 	}

@@ -26,15 +26,19 @@ type Controller struct {
 
 	ia action.InitializeController
 	ma action.MemberController
+	ba action.BookController
 
 	mr repository.MemberRepository
+	br repository.BookRepository
 }
 
 func NewController(
 	c chan worker.WorkerFunc,
 	ia action.InitializeController,
 	ma action.MemberController,
+	ba action.BookController,
 	mr repository.MemberRepository,
+	br repository.BookRepository,
 ) (*Controller, error) {
 	key := utils.RandStringWithSign(16)
 	cr, err := utils.NewCrypt(key)
@@ -49,7 +53,9 @@ func NewController(
 		libInCycleCount: 0,
 		ia:              ia,
 		ma:              ma,
+		ba:              ba,
 		mr:              mr,
+		br:              br,
 	}, nil
 }
 

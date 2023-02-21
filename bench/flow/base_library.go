@@ -9,7 +9,10 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/utils"
 )
 
-const libraryFlowCycle = 1000 * time.Millisecond
+const (
+	libraryFlowCycle = 1000 * time.Millisecond
+	booksPostNum     = 100
+)
 
 // 図書館職員フロー
 func (c *Controller) baseLibraryFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
@@ -27,6 +30,7 @@ func (c *Controller) baseLibraryFlow(step *isucandar.BenchmarkStep) worker.Worke
 				{Val: c.membersGetFlow("", step)},
 				{Val: c.membersGetFlow(utils.RandString(26), step), Weight: 2},
 				{Val: c.membersGetFlow(c.mr.GetRandomMember().ID, step), Weight: 2},
+				{Val: c.booksPostFlow(booksPostNum, step), Weight: 8},
 			},
 		)
 		runner(ctx)
