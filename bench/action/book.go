@@ -3,6 +3,7 @@ package action
 import (
 	"context"
 	"net/http"
+	"strconv"
 
 	"github.com/isucon/isucandar/failure"
 	"github.com/logica0419/gasshuku-isucon/bench/model"
@@ -47,24 +48,37 @@ func (c *Controller) PostBooks(ctx context.Context, body []PostBooksRequest) (*h
 }
 
 type GetBooksQuery struct {
-	Title  string
-	Author string
-	Genre  model.Genre
+	Title      string
+	Author     string
+	Genre      model.Genre
+	Page       int
+	LastBookID string
+}
+
+type GetBooksResponse struct {
+	Books []model.BookWithLending `json:"books"`
+	Total int                     `json:"total"`
 }
 
 // GET /api/members
 func (c *Controller) GetBooks(ctx context.Context, query GetBooksQuery) (*http.Response, error) {
 	agent := c.searchAgent()
 
-	url := "/api/books"
+	url := "/api/books?"
 	if query.Title != "" {
-		url += "?title=" + query.Title + "&"
+		url += "title=" + query.Title + "&"
 	}
 	if query.Author != "" {
-		url += "?author=" + query.Author + "&"
+		url += "author=" + query.Author + "&"
 	}
 	if query.Genre >= 0 {
-		url += "?genre=" + query.Genre.String() + "&"
+		url += "genre=" + query.Genre.String() + "&"
+	}
+	if query.Page > 1 {
+		url += "page=" + strconv.Itoa(query.Page) + "&"
+	}
+	if query.LastBookID != "" {
+		url += "last_book_id=" + query.LastBookID + "&"
 	}
 	url = url[:len(url)-1] // 最後の一文字(?か&)を削除する
 
@@ -81,7 +95,7 @@ func (c *Controller) GetBooks(ctx context.Context, query GetBooksQuery) (*http.R
 	return res, nil
 }
 
-// GET /api/members/:id
+// GET /api/books/:id
 func (c *Controller) GetBook(ctx context.Context, id string, encrypted bool) (*http.Response, error) {
 	agent := c.libAgent()
 

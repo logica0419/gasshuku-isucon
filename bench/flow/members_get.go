@@ -79,7 +79,7 @@ func (c *Controller) membersGetFlow(memberID string, step *isucandar.BenchmarkSt
 
 							v, err := c.mr.GetMemberByID(body.ID)
 							if err != nil {
-								return failure.NewError(model.ErrInvalidBody, err)
+								return nil
 							}
 							return validator.JsonEquals(v.Member)(body)
 						}),
