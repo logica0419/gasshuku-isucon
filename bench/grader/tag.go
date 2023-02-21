@@ -11,6 +11,6 @@ var (
 )
 
 func setScore(result *isucandar.BenchmarkResult) {
-	result.Score.Set(ScoreGetMembers, 5)
+	result.Score.Set(ScoreGetMembers, 20)
 	result.Score.Set(ScoreGetMember, 1)
 }

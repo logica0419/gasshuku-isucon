@@ -4,11 +4,12 @@
 //go:build !wireinject
 // +build !wireinject
 
-package benchmark
+package main
 
 import (
 	"github.com/isucon/isucandar/worker"
 	"github.com/logica0419/gasshuku-isucon/bench/action"
+	"github.com/logica0419/gasshuku-isucon/bench/benchmark"
 	"github.com/logica0419/gasshuku-isucon/bench/config"
 	"github.com/logica0419/gasshuku-isucon/bench/flow"
 	"github.com/logica0419/gasshuku-isucon/bench/repository"
@@ -17,7 +18,7 @@ import (
 
 // Injectors from wire.go:
 
-func NewBenchmark(c chan worker.WorkerFunc) (*Benchmark, error) {
+func injectBenchmark(c chan worker.WorkerFunc) (*benchmark.Benchmark, error) {
 	configConfig, err := config.NewConfig()
 	if err != nil {
 		return nil, err
@@ -35,9 +36,9 @@ func NewBenchmark(c chan worker.WorkerFunc) (*Benchmark, error) {
 		return nil, err
 	}
 	scenarioScenario := scenario.NewScenario(c, flowController)
-	benchmark, err := newBenchmark(configConfig, scenarioScenario)
+	benchmarkBenchmark, err := benchmark.NewBenchmark(configConfig, scenarioScenario)
 	if err != nil {
 		return nil, err
 	}
-	return benchmark, nil
+	return benchmarkBenchmark, nil
 }

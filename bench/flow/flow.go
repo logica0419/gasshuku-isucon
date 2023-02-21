@@ -21,6 +21,9 @@ type FlowController struct {
 	memInCycleCount uint32
 	libInCycleCount uint32
 
+	activeMemWorkerCount uint32
+	activeLibWorkerCount uint32
+
 	ia action.InitializeActionController
 	ma action.MemberActionController
 
@@ -54,6 +57,22 @@ func (c *FlowController) addLibInCycleCount() {
 	atomic.AddUint32(&c.libInCycleCount, 1)
 }
 
+func (c *FlowController) resetLibInCycleCount() {
+	atomic.StoreUint32(&c.libInCycleCount, 0)
+}
+
 func (c *FlowController) addMemInCycleCount() {
 	atomic.AddUint32(&c.memInCycleCount, 1)
+}
+
+func (c *FlowController) resetMemInCycleCount() {
+	atomic.StoreUint32(&c.memInCycleCount, 0)
+}
+
+func (c *FlowController) addActiveMemWorkerCount() {
+	atomic.AddUint32(&c.activeMemWorkerCount, 1)
+}
+
+func (c *FlowController) addActiveLibWorkerCount() {
+	atomic.AddUint32(&c.activeLibWorkerCount, 1)
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/utils"
 )
 
-const libraryFlowCycle = 500 * time.Millisecond
+const libraryFlowCycle = 1000 * time.Millisecond
 
 // 図書館職員フロー
 func (c *FlowController) baseLibraryFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {

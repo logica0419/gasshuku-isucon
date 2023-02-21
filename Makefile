@@ -16,7 +16,7 @@ run-go:
 
 .PHONY: run-bench
 run-bench:
-	cd bench && go run *.go >/dev/null
+	cd bench && go run main.go wire_gen.go >/dev/null
 
 .PHONY: run-generator
 run-generator: init-db
