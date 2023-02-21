@@ -36,7 +36,6 @@ func (s *Scenario) Load(ctx context.Context, step *isucandar.BenchmarkStep) erro
 				return err
 			}
 			go nw.Process(ctx)
-
 		}
 	}
 }
