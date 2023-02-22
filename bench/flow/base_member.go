@@ -39,7 +39,7 @@ func (c *Controller) baseMemberFlow(memberID string, step *isucandar.BenchmarkSt
 		if member.Lending {
 			choices = append(choices, utils.Choice[flow]{
 				Val:    c.returnLendingsFlow(memberID, step),
-				Weight: 2,
+				Weight: 3,
 			})
 		} else {
 			choices = append(choices, utils.Choice[flow]{

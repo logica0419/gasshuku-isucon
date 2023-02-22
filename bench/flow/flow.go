@@ -51,17 +51,16 @@ func NewController(
 	}
 
 	return &Controller{
-		wc:              c,
-		key:             key,
-		cr:              cr,
-		libInCycleCount: 0,
-		ia:              ia,
-		ma:              ma,
-		ba:              ba,
-		la:              la,
-		mr:              mr,
-		br:              br,
-		lr:              lr,
+		wc:  c,
+		key: key,
+		cr:  cr,
+		ia:  ia,
+		ma:  ma,
+		ba:  ba,
+		la:  la,
+		mr:  mr,
+		br:  br,
+		lr:  lr,
 	}, nil
 }
 

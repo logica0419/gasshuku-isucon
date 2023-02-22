@@ -90,7 +90,9 @@ type MemberUpdateQuery struct {
 
 func (r *Repository) UpdateMember(id string, q MemberUpdateQuery) error {
 	r.mLock.Lock()
+	r.lLock.Lock()
 	defer r.mLock.Unlock()
+	defer r.lLock.Unlock()
 
 	m, ok := r.memberMap[id]
 	if !ok {
@@ -111,13 +113,28 @@ func (r *Repository) UpdateMember(id string, q MemberUpdateQuery) error {
 	r.memberMap[id].Address = q.Address
 	r.memberMap[id].PhoneNumber = q.PhoneNumber
 
+	updated := false
 	for i, m := range r.memberSlice {
 		if m.ID == id {
 			r.memberSlice[i].Name = q.Name
 			r.memberSlice[i].Address = q.Address
 			r.memberSlice[i].PhoneNumber = q.PhoneNumber
-			return nil
+			updated = true
+			break
 		}
 	}
-	return ErrNotFound
+	if !updated {
+		return ErrNotFound
+	}
+
+	for k, l := range r.lendingMap {
+		if l.MemberID == id {
+			r.lendingMap[k].MemberName = q.Name
+			break
+		}
+	}
+	for i := range r.lendingMemberMap[id] {
+		r.lendingMemberMap[id][i].MemberName = q.Name
+	}
+	return nil
 }

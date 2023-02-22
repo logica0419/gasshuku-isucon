@@ -39,7 +39,7 @@ func CalcResult(result *isucandar.BenchmarkResult, finish bool) bool {
 			errorCount += 1
 		}
 	}
-	deductionTotal := errorCount*10 + timeoutCount/10
+	deductionTotal := errorCount*10 + timeoutCount
 
 	score := scoreRaw - deductionTotal
 	if score <= 0 && passed {

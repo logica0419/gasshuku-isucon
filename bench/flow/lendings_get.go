@@ -51,6 +51,7 @@ func (c *Controller) getLendingsFlow(step *isucandar.BenchmarkStep) flow {
 					if err != nil {
 						return nil
 					}
+					v.MemberName = body.MemberName
 					return validator.JsonEquals(*v)(body)
 				}),
 			),

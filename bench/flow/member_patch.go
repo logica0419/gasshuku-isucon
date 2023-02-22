@@ -32,6 +32,7 @@ func (c *Controller) patchMemberFlow(memberID string, step *isucandar.BenchmarkS
 		res, err := c.ma.PatchMember(ctx, memberID, req)
 		if err != nil {
 			step.AddError(fmt.Errorf("PATCH /api/members/%s: %w", memberID, err))
+			return
 		}
 
 		err = validator.Validate(res,
@@ -39,6 +40,7 @@ func (c *Controller) patchMemberFlow(memberID string, step *isucandar.BenchmarkS
 		)
 		if err != nil {
 			step.AddError(fmt.Errorf("PATCH /api/members/%s: %w", memberID, err))
+			return
 		}
 
 		c.mr.UpdateMember(memberID, repository.MemberUpdateQuery(req))

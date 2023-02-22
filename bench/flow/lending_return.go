@@ -41,6 +41,11 @@ func (c *Controller) returnLendingsFlow(memberID string, step *isucandar.Benchma
 
 		wg.Wait()
 
+		lendings, err = c.lr.GetLendingsByMemberID(memberID)
+		if err != nil {
+			return
+		}
+
 		res, err := c.la.ReturnLendings(ctx, memberID, bookIDs)
 		if err != nil {
 			step.AddError(fmt.Errorf("POST /api/lendings/return: %w", err))
