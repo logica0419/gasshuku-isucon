@@ -13,6 +13,7 @@ import (
 type BookController interface {
 	PostBooks(ctx context.Context, body []PostBooksRequest) (*http.Response, error)
 	GetBooks(ctx context.Context, query GetBooksQuery) (*http.Response, error)
+	GetBook(ctx context.Context, id string, encrypted bool) (*http.Response, error)
 	GetBookQRCode(ctx context.Context, id string) (*http.Response, error)
 }
 
