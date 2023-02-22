@@ -808,6 +808,7 @@ Lending API
 ---------------------------------------------------------------
 */
 
+// 貸出期間(ミリ秒)
 const LendingPeriod = 3000
 
 type PostLendingsRequest struct {
