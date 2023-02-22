@@ -47,6 +47,10 @@ func NewRepository() (*Repository, error) {
 		bLock:     sync.RWMutex{},
 		bookSlice: []*model.BookWithLending{},
 		bookMap:   map[string]*model.BookWithLending{},
+
+		lLock:            sync.RWMutex{},
+		lendingMemberMap: map[string][]*model.LendingWithNames{},
+		lendingMap:       map[string]*model.LendingWithNames{},
 	}
 
 	var data InitData

@@ -13,6 +13,7 @@ var (
 	ScoreSearchBooks score.ScoreTag = "search_books"
 
 	ScorePostLendings score.ScoreTag = "post_lendings"
+	ScoreGetLendings  score.ScoreTag = "get_lendings"
 )
 
 func setScore(result *isucandar.BenchmarkResult) {
@@ -23,4 +24,5 @@ func setScore(result *isucandar.BenchmarkResult) {
 	result.Score.Set(ScoreSearchBooks, 15)
 
 	result.Score.Set(ScorePostLendings, 25)
+	result.Score.Set(ScoreGetLendings, 15)
 }
