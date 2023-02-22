@@ -58,7 +58,7 @@ func (c *Controller) ScaleUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 				c.resetLibInCycleCount()
 
 			case <-baseTicker.C:
-				// 図書館職員フローが時間内に4/5終了かつ会員フローが時間内に1/5終了したら。図書館職員フローを追加
+				// 図書館職員フローが時間内に4/5終了かつ会員フローが時間内に1/5終了したら、図書館職員フローを追加
 				if c.libInCycleCount > c.activeLibWorkerCount*4/5 && c.memInCycleCount > c.activeMemWorkerCount/5 {
 					join := int(c.activeLibWorkerCount / 5)
 					for i := 0; i < join; i++ {
@@ -69,6 +69,7 @@ func (c *Controller) ScaleUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 					logger.Contestant.Printf("%d人の図書館職員が採用されました: 計%d", join, c.activeLibWorkerCount)
 				}
 
+				// 会員フローが時間内に4/5終了かつ図書館職員フローが時間内に1/5終了したら、会員フローを追加
 				if c.memInCycleCount > c.activeMemWorkerCount*4/5 && c.libInCycleCount > c.activeLibWorkerCount/5 {
 					join := int(c.activeMemWorkerCount / 5)
 					mem, err := c.mr.GetInactiveMemberID(join)
