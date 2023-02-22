@@ -26,7 +26,7 @@ import (
 )
 
 func main() {
-	host := getEnvOrDefault("DB_HOST", "127.0.0.1")
+	host := getEnvOrDefault("DB_HOST", "localhost")
 	port := getEnvOrDefault("DB_PORT", "3306")
 	user := getEnvOrDefault("DB_USER", "isucon")
 	pass := getEnvOrDefault("DB_PASS", "isucon")

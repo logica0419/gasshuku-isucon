@@ -1,7 +1,7 @@
 #!/bin/bash -e
 cd "$(dirname "$0")"
 
-DB_HOST=${DB_HOST:-127.0.0.1}
+DB_HOST=${DB_HOST:-localhost}
 DB_PORT=${DB_PORT:-3306}
 DB_USER=${DB_USER:-isucon}
 DB_PASS=${DB_PASS:-isucon}
