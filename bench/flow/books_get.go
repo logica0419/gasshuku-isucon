@@ -91,7 +91,7 @@ func (c *Controller) searchBooksFlow(step *isucandar.BenchmarkStep) flow {
 							if err != nil {
 								return nil
 							}
-							return validator.JsonEquals(*v)(body)
+							return validator.JsonEquals(v.Book)(body.Book)
 						}),
 						func(body []model.BookWithLending) error {
 							lastBookID = body[len(body)-1].ID

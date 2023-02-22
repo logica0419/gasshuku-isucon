@@ -60,6 +60,8 @@ func (c *Controller) getLendingsFlow(step *isucandar.BenchmarkStep) flow {
 			return
 		}
 
+		step.AddScore(grader.ScoreGetLendings)
+
 		eg := errgroup.Group{}
 		for _, id := range banUserIDs {
 			id := id
@@ -80,6 +82,8 @@ func (c *Controller) getLendingsFlow(step *isucandar.BenchmarkStep) flow {
 				}
 
 				c.mr.DeleteMember(id)
+
+				step.AddScore(grader.ScoreBanMember)
 				return nil
 			})
 		}
@@ -87,7 +91,5 @@ func (c *Controller) getLendingsFlow(step *isucandar.BenchmarkStep) flow {
 		if err != nil {
 			return
 		}
-
-		step.AddScore(grader.ScoreGetLendings)
 	}
 }

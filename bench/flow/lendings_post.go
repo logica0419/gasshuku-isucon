@@ -13,7 +13,7 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/validator"
 )
 
-func (c *Controller) lendingsPostFlow(memberID string, num int, step *isucandar.BenchmarkStep) flow {
+func (c *Controller) postLendingFlow(memberID string, num int, step *isucandar.BenchmarkStep) flow {
 	return func(ctx context.Context) {
 		member, err := c.mr.GetMemberByID(memberID)
 		if err != nil {

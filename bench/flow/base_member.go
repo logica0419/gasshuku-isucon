@@ -36,8 +36,15 @@ func (c *Controller) baseMemberFlow(memberID string, step *isucandar.BenchmarkSt
 			{Val: c.searchBooksFlow(step)},
 		}
 		if member.Lending {
+			choices = append(choices, utils.Choice[flow]{
+				Val:    c.returnLendingsFlow(memberID, step),
+				Weight: 2,
+			})
 		} else {
-			choices = append(choices, utils.Choice[flow]{Val: c.lendingsPostFlow(memberID, int(c.activeMemWorkerCount*2), step)})
+			choices = append(choices, utils.Choice[flow]{
+				Val:    c.postLendingFlow(memberID, int(c.activeMemWorkerCount*2), step),
+				Weight: 2,
+			})
 		}
 
 		runner := utils.WeightedSelect(choices)
