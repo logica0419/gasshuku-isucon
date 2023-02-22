@@ -25,7 +25,7 @@ func (c *Controller) baseMemberFlow(memberID string, step *isucandar.BenchmarkSt
 		runner := utils.WeightedSelect(
 			[]utils.Choice[flow]{
 				{Val: c.searchBooksFlow(step)},
-				{Val: c.lendingsPostFlow(30, step), Weight: 3},
+				{Val: c.lendingsPostFlow(int(c.activeMemWorkerCount*2), step), Weight: 3},
 			},
 		)
 		runner(ctx)
