@@ -81,7 +81,13 @@ func (c *Controller) getMembersFlow(memberID string, step *isucandar.BenchmarkSt
 							if err != nil {
 								return nil
 							}
-							return validator.JsonEquals(v.Member)(body)
+							if v.ID != body.ID {
+								return failure.NewError(model.ErrInvalidBody, fmt.Errorf("member ID is not equal"))
+							}
+							if v.CreatedAt != body.CreatedAt {
+								return failure.NewError(model.ErrInvalidBody, fmt.Errorf("created at is not equal"))
+							}
+							return nil
 						}),
 						func(body []model.Member) error {
 							lastMemberID = body[len(body)-1].ID

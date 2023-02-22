@@ -22,7 +22,7 @@ func (c *Controller) getLendingsFlow(step *isucandar.BenchmarkStep) flow {
 
 		res, err := c.la.GetLendings(ctx, overdue)
 		if err != nil {
-			step.AddError(fmt.Errorf("GET /api/members: %w", err))
+			step.AddError(fmt.Errorf("GET /api/lendings: %w", err))
 			return
 		}
 
@@ -56,7 +56,7 @@ func (c *Controller) getLendingsFlow(step *isucandar.BenchmarkStep) flow {
 			),
 		)
 		if err != nil {
-			step.AddError(fmt.Errorf("GET /api/members: %w", err))
+			step.AddError(fmt.Errorf("GET /api/lendings: %w", err))
 			return
 		}
 

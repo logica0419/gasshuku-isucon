@@ -13,7 +13,7 @@ import (
 
 func (c *Controller) getMemberFlow(memberID string, encrypt bool, step *isucandar.BenchmarkStep) flow {
 	if memberID == "" {
-		step.AddError(fmt.Errorf("GET /api/member/:id: %w", failure.NewError(model.ErrCritical, fmt.Errorf("memberID is empty"))))
+		step.AddError(fmt.Errorf("GET /api/members/:id: %w", failure.NewError(model.ErrCritical, fmt.Errorf("memberID is empty"))))
 	}
 
 	findable := false
@@ -25,7 +25,7 @@ func (c *Controller) getMemberFlow(memberID string, encrypt bool, step *isucanda
 		var err error
 		memberID, err = c.cr.Encrypt(memberID)
 		if err != nil {
-			step.AddError(fmt.Errorf("GET /api/member/:id: %w", failure.NewError(model.ErrCritical, err)))
+			step.AddError(fmt.Errorf("GET /api/members/:id: %w", failure.NewError(model.ErrCritical, err)))
 			return nil
 		}
 	}
@@ -33,7 +33,7 @@ func (c *Controller) getMemberFlow(memberID string, encrypt bool, step *isucanda
 	return func(ctx context.Context) {
 		res, err := c.ma.GetMember(ctx, memberID, encrypt)
 		if err != nil {
-			step.AddError(fmt.Errorf("GET /api/member/%s: %w", memberID, err))
+			step.AddError(fmt.Errorf("GET /api/members/%s: %w", memberID, err))
 			return
 		}
 
@@ -47,7 +47,13 @@ func (c *Controller) getMemberFlow(memberID string, encrypt bool, step *isucanda
 						if err != nil {
 							return failure.NewError(model.ErrInvalidBody, err)
 						}
-						return validator.JsonEquals(v.Member)(body)
+						if v.ID != body.ID {
+							return failure.NewError(model.ErrInvalidBody, fmt.Errorf("member ID is not equal"))
+						}
+						if v.CreatedAt != body.CreatedAt {
+							return failure.NewError(model.ErrInvalidBody, fmt.Errorf("created at is not equal"))
+						}
+						return nil
 					}),
 			)
 			if err != nil {
