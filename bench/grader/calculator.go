@@ -9,8 +9,15 @@ import (
 )
 
 func CalcResult(result *isucandar.BenchmarkResult, finish bool) bool {
-	logger.Admin.Print("")
-	logger.Admin.Print("---------Bench Result---------")
+	var scoreLogger *log.Logger
+	if finish {
+		scoreLogger = logger.Contestant
+	} else {
+		scoreLogger = logger.Admin
+	}
+
+	scoreLogger.Print("")
+	scoreLogger.Print("---------Bench Result---------")
 
 	passed := true
 	status := "pass"
@@ -19,9 +26,9 @@ func CalcResult(result *isucandar.BenchmarkResult, finish bool) bool {
 	setScore(result)
 	scoreRaw := result.Score.Sum()
 
-	logger.Admin.Printf("breakdown:")
+	scoreLogger.Printf("breakdown:")
 	for tag, count := range result.Score.Breakdown() {
-		logger.Admin.Printf("  %s: %d", tag, count)
+		scoreLogger.Printf("  %s: %d", tag, count)
 	}
 
 	errorCount := int64(0)
@@ -45,13 +52,6 @@ func CalcResult(result *isucandar.BenchmarkResult, finish bool) bool {
 	if score <= 0 && passed {
 		passed = false
 		status = "fail: score"
-	}
-
-	var scoreLogger *log.Logger
-	if finish {
-		scoreLogger = logger.Contestant
-	} else {
-		scoreLogger = logger.Admin
 	}
 
 	scoreLogger.Print("")
