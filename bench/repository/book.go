@@ -7,12 +7,38 @@ import (
 )
 
 type BookRepository interface {
+	GetNotLendingBooks(num int) ([]*model.BookWithLending, error)
+
 	GetBookByID(id string) (*model.BookWithLending, error)
 	GetRandomBook() *model.BookWithLending
 	AddBooks(books []*model.BookWithLending)
 }
 
 var _ BookRepository = &Repository{}
+
+func (r *Repository) GetNotLendingBooks(num int) ([]*model.BookWithLending, error) {
+	r.bLock.RLock()
+	defer r.bLock.RUnlock()
+
+	startIndex := rand.Intn(len(r.bookSlice))
+	slice := append(r.bookSlice[startIndex:], r.bookSlice[:startIndex]...)
+
+	books := []*model.BookWithLending{}
+	for _, b := range slice {
+		if !b.Lending {
+			books = append(books, b)
+			if len(books) >= num {
+				break
+			}
+		}
+	}
+
+	if len(books) < num {
+		return nil, ErrNotEnoughRecords
+	}
+
+	return books, nil
+}
 
 func (r *Repository) GetBookByID(id string) (*model.BookWithLending, error) {
 	r.bLock.RLock()
