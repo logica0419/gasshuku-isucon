@@ -34,6 +34,7 @@ func (c *Controller) baseMemberFlow(memberID string, step *isucandar.BenchmarkSt
 
 		choices := []utils.Choice[flow]{
 			{Val: c.searchBooksFlow(step)},
+			{Val: c.patchMemberFlow(memberID, step)},
 		}
 		if member.Lending {
 			choices = append(choices, utils.Choice[flow]{

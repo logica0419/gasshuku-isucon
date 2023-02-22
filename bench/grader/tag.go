@@ -6,9 +6,10 @@ import (
 )
 
 var (
-	ScorePostMember score.ScoreTag = "post_member"
-	ScoreGetMembers score.ScoreTag = "get_members"
-	ScoreBanMember  score.ScoreTag = "ban_member"
+	ScorePostMember   score.ScoreTag = "post_member"
+	ScoreGetMembers   score.ScoreTag = "get_members"
+	ScoreBanMember    score.ScoreTag = "ban_member"
+	ScoreUpdateMember score.ScoreTag = "update_member"
 
 	ScorePostBooks   score.ScoreTag = "post_books"
 	ScoreSearchBooks score.ScoreTag = "search_books"
@@ -22,6 +23,7 @@ func setScore(result *isucandar.BenchmarkResult) {
 	result.Score.Set(ScorePostMember, 20)
 	result.Score.Set(ScoreGetMembers, 15)
 	result.Score.Set(ScoreBanMember, 1)
+	result.Score.Set(ScoreUpdateMember, 5)
 
 	result.Score.Set(ScorePostBooks, 20)
 	result.Score.Set(ScoreSearchBooks, 15)

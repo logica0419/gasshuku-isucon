@@ -15,6 +15,7 @@ type MemberController interface {
 	GetMembers(ctx context.Context, query GetMembersQuery) (*http.Response, error)
 	GetMember(ctx context.Context, id string, encrypted bool) (*http.Response, error)
 	BanMember(ctx context.Context, id string) (*http.Response, error)
+	PatchMember(ctx context.Context, id string, body PatchMemberRequest) (*http.Response, error)
 	GetMemberQRCode(ctx context.Context, id string) (*http.Response, error)
 }
 
@@ -119,6 +120,35 @@ func (c *Controller) BanMember(ctx context.Context, id string) (*http.Response, 
 	if err != nil {
 		return nil, failure.NewError(model.ErrCritical, err)
 	}
+
+	res, err := agent.Do(ctx, req)
+	if err != nil {
+		return nil, processErr(ctx, err)
+	}
+
+	return res, nil
+}
+
+type PatchMemberRequest struct {
+	Name        string `json:"name"`
+	Address     string `json:"address"`
+	PhoneNumber string `json:"phone_number"`
+}
+
+// PATCH /api/members/:id
+func (c *Controller) PatchMember(ctx context.Context, id string, body PatchMemberRequest) (*http.Response, error) {
+	reader, err := utils.EncodeJson(body)
+	if err != nil {
+		return nil, failure.NewError(model.ErrCritical, err)
+	}
+
+	agent := c.libAgent()
+
+	req, err := agent.PATCH("/api/members/"+id, reader)
+	if err != nil {
+		return nil, failure.NewError(model.ErrCritical, err)
+	}
+	req.Header.Set("Content-Type", "application/json")
 
 	res, err := agent.Do(ctx, req)
 	if err != nil {

@@ -14,6 +14,7 @@ type MemberRepository interface {
 	GetRandomMember() *model.MemberWithLending
 	AddMembers(members []*model.MemberWithLending)
 	DeleteMember(id string)
+	UpdateMember(memberID string, q MemberUpdateQuery) error
 }
 
 var _ MemberRepository = &Repository{}
@@ -79,4 +80,44 @@ func (r *Repository) DeleteMember(id string) {
 			return
 		}
 	}
+}
+
+type MemberUpdateQuery struct {
+	Name        string
+	Address     string
+	PhoneNumber string
+}
+
+func (r *Repository) UpdateMember(id string, q MemberUpdateQuery) error {
+	r.mLock.Lock()
+	defer r.mLock.Unlock()
+
+	m, ok := r.memberMap[id]
+	if !ok {
+		return ErrNotFound
+	}
+
+	if q.Name == "" {
+		q.Name = m.Name
+	}
+	if q.Address == "" {
+		q.Address = m.Address
+	}
+	if q.PhoneNumber == "" {
+		q.PhoneNumber = m.PhoneNumber
+	}
+
+	r.memberMap[id].Name = q.Name
+	r.memberMap[id].Address = q.Address
+	r.memberMap[id].PhoneNumber = q.PhoneNumber
+
+	for i, m := range r.memberSlice {
+		if m.ID == id {
+			r.memberSlice[i].Name = q.Name
+			r.memberSlice[i].Address = q.Address
+			r.memberSlice[i].PhoneNumber = q.PhoneNumber
+			return nil
+		}
+	}
+	return ErrNotFound
 }
