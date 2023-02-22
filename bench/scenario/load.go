@@ -8,7 +8,7 @@ import (
 	"github.com/isucon/isucandar/worker"
 )
 
-const BenchTime = 10 * time.Second
+const BenchTime = 60 * time.Second
 
 func (s *Scenario) Load(ctx context.Context, step *isucandar.BenchmarkStep) error {
 	ctx, cancel := context.WithTimeout(ctx, BenchTime)
