@@ -12,7 +12,7 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/validator"
 )
 
-func (c *Controller) postLendingsFlow(num int, step *isucandar.BenchmarkStep) flow {
+func (c *Controller) lendingsPostFlow(num int, step *isucandar.BenchmarkStep) flow {
 	return func(ctx context.Context) {
 		member, err := c.mr.GetNotLendingMember()
 		if err != nil {
@@ -63,6 +63,6 @@ func (c *Controller) postLendingsFlow(num int, step *isucandar.BenchmarkStep) fl
 
 		c.lr.AddLendings(lendings)
 
-		step.AddScore(grader.ScorePostBooks)
+		step.AddScore(grader.ScorePostLendings)
 	}
 }

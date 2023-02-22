@@ -39,8 +39,10 @@ func NewController(
 	ia action.InitializeController,
 	ma action.MemberController,
 	ba action.BookController,
+	la action.LendingController,
 	mr repository.MemberRepository,
 	br repository.BookRepository,
+	lr repository.LendingRepository,
 ) (*Controller, error) {
 	key := utils.RandStringWithSign(16)
 	cr, err := utils.NewCrypt(key)
@@ -56,8 +58,10 @@ func NewController(
 		ia:              ia,
 		ma:              ma,
 		ba:              ba,
+		la:              la,
 		mr:              mr,
 		br:              br,
+		lr:              lr,
 	}, nil
 }
 
