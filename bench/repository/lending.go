@@ -5,7 +5,7 @@ import "github.com/logica0419/gasshuku-isucon/bench/model"
 type LendingRepository interface {
 	GetLendingByID(id string) (*model.LendingWithNames, error)
 	GetLendingsByMemberID(id string) ([]*model.LendingWithNames, error)
-	AddLendings(lendings []*model.LendingWithNames) error
+	AddLendings(lendings []*model.LendingWithNames)
 	DeleteLendings(memberID string)
 }
 
@@ -33,7 +33,7 @@ func (r *Repository) GetLendingsByMemberID(id string) ([]*model.LendingWithNames
 	return v, nil
 }
 
-func (r *Repository) AddLendings(lendings []*model.LendingWithNames) error {
+func (r *Repository) AddLendings(lendings []*model.LendingWithNames) {
 	r.lLock.Lock()
 	r.mLock.Lock()
 	r.bLock.Lock()
@@ -63,7 +63,6 @@ func (r *Repository) AddLendings(lendings []*model.LendingWithNames) error {
 			}
 		}
 	}
-	return nil
 }
 
 func (r *Repository) DeleteLendings(memberID string) {

@@ -27,9 +27,11 @@ type Controller struct {
 	ia action.InitializeController
 	ma action.MemberController
 	ba action.BookController
+	la action.LendingController
 
 	mr repository.MemberRepository
 	br repository.BookRepository
+	lr repository.LendingRepository
 }
 
 func NewController(
