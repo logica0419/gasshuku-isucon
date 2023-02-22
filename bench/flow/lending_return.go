@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sync"
 
 	"github.com/isucon/isucandar"
 	"github.com/isucon/isucandar/failure"
@@ -14,6 +15,13 @@ import (
 
 func (c *Controller) returnLendingsFlow(memberID string, step *isucandar.BenchmarkStep) flow {
 	return func(ctx context.Context) {
+		wg := sync.WaitGroup{}
+		wg.Add(1)
+		go func() {
+			c.getMemberFlow(memberID, true, step)(ctx)
+			wg.Done()
+		}()
+
 		lendings, err := c.lr.GetLendingsByMemberID(memberID)
 		if err != nil {
 			step.AddError(fmt.Errorf("POST /api/lendings/return: %w", failure.NewError(model.ErrCritical, err)))
@@ -22,8 +30,16 @@ func (c *Controller) returnLendingsFlow(memberID string, step *isucandar.Benchma
 
 		bookIDs := []string{}
 		for _, lending := range lendings {
-			bookIDs = append(bookIDs, lending.BookID)
+			bookID := lending.BookID
+			bookIDs = append(bookIDs, bookID)
+			wg.Add(1)
+			go func() {
+				c.getBookFlow(bookID, true, step)(ctx)
+				wg.Done()
+			}()
 		}
+
+		wg.Wait()
 
 		res, err := c.la.ReturnLendings(ctx, memberID, bookIDs)
 		if err != nil {

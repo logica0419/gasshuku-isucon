@@ -35,6 +35,7 @@ func (c *Controller) postLendingFlow(memberID string, num int, step *isucandar.B
 
 		bookIDs := []string{}
 		for _, book := range books {
+			book := book
 			wg.Add(1)
 			go func() {
 				c.getBookFlow(book.ID, true, step)(ctx)
@@ -42,6 +43,7 @@ func (c *Controller) postLendingFlow(memberID string, num int, step *isucandar.B
 			}()
 			bookIDs = append(bookIDs, book.ID)
 		}
+
 		wg.Wait()
 
 		res, err := c.la.PostLendings(ctx, memberID, bookIDs)
