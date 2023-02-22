@@ -116,6 +116,8 @@ func (c *Controller) searchBooksFlow(step *isucandar.BenchmarkStep) flow {
 			if found {
 				break
 			}
+
+			page++
 		}
 
 		step.AddScore(grader.ScoreSearchBooks)
