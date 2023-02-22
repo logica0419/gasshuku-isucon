@@ -61,7 +61,7 @@ type GetBooksResponse struct {
 	Total int                     `json:"total"`
 }
 
-// GET /api/members
+// GET /api/books
 func (c *Controller) GetBooks(ctx context.Context, query GetBooksQuery) (*http.Response, error) {
 	agent := c.searchAgent()
 

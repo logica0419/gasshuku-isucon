@@ -22,6 +22,7 @@ type PostLendingsRequest struct {
 	MemberID string   `json:"member_id"`
 }
 
+// POST /api/lendings
 func (c *Controller) PostLendings(ctx context.Context, memberID string, bookIDs []string) (*http.Response, error) {
 	body := PostLendingsRequest{
 		BookIDs:  bookIDs,
@@ -49,6 +50,7 @@ func (c *Controller) PostLendings(ctx context.Context, memberID string, bookIDs 
 	return res, nil
 }
 
+// GET /api/lendings
 func (c *Controller) GetLendings(ctx context.Context, overDue bool) (*http.Response, error) {
 	agent := c.libAgent()
 
@@ -75,6 +77,7 @@ type ReturnLendingsRequest struct {
 	MemberID string   `json:"member_id"`
 }
 
+// POST /api/lendings/return
 func (c *Controller) ReturnLendings(ctx context.Context, memberID string, bookIDs []string) (*http.Response, error) {
 	body := PostLendingsRequest{
 		BookIDs:  bookIDs,
