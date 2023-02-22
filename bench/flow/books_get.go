@@ -18,7 +18,7 @@ import (
 
 const bookPageLimit = 50
 
-func (c *Controller) booksSearchFlow(step *isucandar.BenchmarkStep) flow {
+func (c *Controller) searchBooksFlow(step *isucandar.BenchmarkStep) flow {
 	return func(ctx context.Context) {
 		book := c.br.GetRandomBook()
 

@@ -18,6 +18,7 @@ func (c *Controller) lendingsPostFlow(num int, step *isucandar.BenchmarkStep) fl
 		if err != nil {
 			return
 		}
+		go c.getMemberFlow(member.ID, true, step)(ctx)
 
 		books, err := c.br.GetNotLendingBooks(num)
 		if err != nil {
@@ -26,6 +27,7 @@ func (c *Controller) lendingsPostFlow(num int, step *isucandar.BenchmarkStep) fl
 
 		bookIDs := []string{}
 		for _, book := range books {
+			go c.getBookFlow(book.ID, true, step)(ctx)
 			bookIDs = append(bookIDs, book.ID)
 		}
 

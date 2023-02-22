@@ -12,7 +12,7 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/validator"
 )
 
-func (c *Controller) memberPostFlow(num int, step *isucandar.BenchmarkStep) flow {
+func (c *Controller) postMemberFlow(num int, step *isucandar.BenchmarkStep) flow {
 	return func(ctx context.Context) {
 		members := []*model.MemberWithLending{}
 

@@ -27,10 +27,10 @@ func (c *Controller) baseLibraryFlow(step *isucandar.BenchmarkStep) worker.Worke
 
 		runner := utils.WeightedSelect(
 			[]utils.Choice[flow]{
-				{Val: c.membersGetFlow("", step)},
-				{Val: c.membersGetFlow(utils.RandString(26), step), Weight: 2},
-				{Val: c.membersGetFlow(c.mr.GetRandomMember().ID, step), Weight: 2},
-				{Val: c.booksPostFlow(booksPostNum, step), Weight: 8},
+				{Val: c.getMembersFlow("", step)},
+				{Val: c.getMembersFlow(utils.RandString(26), step), Weight: 2},
+				{Val: c.getMembersFlow(c.mr.GetRandomMember().ID, step), Weight: 2},
+				{Val: c.postBooksFlow(booksPostNum, step), Weight: 8},
 			},
 		)
 		runner(ctx)

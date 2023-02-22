@@ -11,7 +11,7 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/validator"
 )
 
-func (c *Controller) bookGetFlow(bookID string, encrypt bool, step *isucandar.BenchmarkStep) flow {
+func (c *Controller) getBookFlow(bookID string, encrypt bool, step *isucandar.BenchmarkStep) flow {
 	if bookID == "" {
 		step.AddError(fmt.Errorf("GET /api/books/:id: %w", failure.NewError(model.ErrCritical, fmt.Errorf("memberID is empty"))))
 	}

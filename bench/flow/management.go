@@ -20,7 +20,7 @@ func (c *Controller) StartUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 		default:
 		}
 
-		mem, err := c.mr.GetInactiveMemberID(10)
+		mem, err := c.mr.GetInactiveMemberID(5)
 		if err != nil {
 			step.AddError(failure.NewError(model.ErrCritical, err))
 			return
@@ -31,7 +31,7 @@ func (c *Controller) StartUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 			c.addActiveMemWorkerCount()
 		}
 
-		for i := 0; i < 10; i++ {
+		for i := 0; i < 5; i++ {
 			w := c.baseLibraryFlow(step)
 			c.wc <- w
 			c.addActiveLibWorkerCount()
@@ -74,7 +74,7 @@ func (c *Controller) ScaleUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 					join := int(c.activeMemWorkerCount / 5)
 					mem, err := c.mr.GetInactiveMemberID(join)
 					if err != nil {
-						c.memberPostFlow(join, step)(ctx)
+						c.postMemberFlow(join, step)(ctx)
 						mem, err = c.mr.GetInactiveMemberID(join)
 						if err != nil {
 							step.AddError(failure.NewError(model.ErrCritical, err))

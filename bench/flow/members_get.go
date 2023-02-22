@@ -17,7 +17,7 @@ import (
 
 const memberPageLimit = 100
 
-func (c *Controller) membersGetFlow(memberID string, step *isucandar.BenchmarkStep) flow {
+func (c *Controller) getMembersFlow(memberID string, step *isucandar.BenchmarkStep) flow {
 	findable := false
 	if memberID != "" {
 		if _, err := c.mr.GetMemberByID(memberID); err == nil {

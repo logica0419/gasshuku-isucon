@@ -13,7 +13,7 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/validator"
 )
 
-func (c *Controller) booksPostFlow(num int, step *isucandar.BenchmarkStep) flow {
+func (c *Controller) postBooksFlow(num int, step *isucandar.BenchmarkStep) flow {
 	return func(ctx context.Context) {
 		req := []action.PostBooksRequest{}
 
