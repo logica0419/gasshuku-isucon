@@ -481,7 +481,7 @@ func patchMemberHandler(c echo.Context) error {
 
 	_ = tx.Commit()
 
-	return c.NoContent(http.StatusOK)
+	return c.NoContent(http.StatusNoContent)
 }
 
 // 会員をBAN
@@ -516,7 +516,7 @@ func banMemberHandler(c echo.Context) error {
 
 	_ = tx.Commit()
 
-	return c.NoContent(http.StatusOK)
+	return c.NoContent(http.StatusNoContent)
 }
 
 // 会員証用のQRコードを取得
@@ -1017,5 +1017,5 @@ func returnLendingsHandler(c echo.Context) error {
 
 	_ = tx.Commit()
 
-	return c.NoContent(http.StatusOK)
+	return c.NoContent(http.StatusNoContent)
 }
