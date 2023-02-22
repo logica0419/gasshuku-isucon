@@ -32,6 +32,10 @@ run-generator: init-db
 up:
 	cd dev && docker compose up -d
 
+.PHONY: build-up
+build-up:
+	cd dev && docker compose up -d --build
+
 .PHONY: down
 down:
 	cd dev && docker compose down
