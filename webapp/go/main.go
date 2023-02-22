@@ -899,7 +899,7 @@ func postLendingsHandler(c echo.Context) error {
 
 	_ = tx.Commit()
 
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusCreated, res)
 }
 
 type GetLendingsResponse struct {
