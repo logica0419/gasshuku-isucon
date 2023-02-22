@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sync"
 
 	"github.com/isucon/isucandar"
 	"github.com/isucon/isucandar/failure"
@@ -12,13 +13,20 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/validator"
 )
 
-func (c *Controller) lendingsPostFlow(num int, step *isucandar.BenchmarkStep) flow {
+func (c *Controller) lendingsPostFlow(memberID string, num int, step *isucandar.BenchmarkStep) flow {
 	return func(ctx context.Context) {
-		member, err := c.mr.GetNotLendingMember()
+		member, err := c.mr.GetMemberByID(memberID)
 		if err != nil {
+			step.AddError(fmt.Errorf("GET /api/member/%s: %w", memberID, failure.NewError(model.ErrCritical, err)))
 			return
 		}
-		go c.getMemberFlow(member.ID, true, step)(ctx)
+
+		wg := sync.WaitGroup{}
+		wg.Add(1)
+		go func() {
+			c.getMemberFlow(memberID, true, step)(ctx)
+			wg.Done()
+		}()
 
 		books, err := c.br.GetNotLendingBooks(num)
 		if err != nil {
@@ -27,11 +35,16 @@ func (c *Controller) lendingsPostFlow(num int, step *isucandar.BenchmarkStep) fl
 
 		bookIDs := []string{}
 		for _, book := range books {
-			go c.getBookFlow(book.ID, true, step)(ctx)
+			wg.Add(1)
+			go func() {
+				c.getBookFlow(book.ID, true, step)(ctx)
+				wg.Done()
+			}()
 			bookIDs = append(bookIDs, book.ID)
 		}
+		wg.Wait()
 
-		res, err := c.la.PostLendings(ctx, member.ID, bookIDs)
+		res, err := c.la.PostLendings(ctx, memberID, bookIDs)
 		if err != nil {
 			step.AddError(fmt.Errorf("POST /api/lendings: %w", err))
 			return
@@ -48,7 +61,7 @@ func (c *Controller) lendingsPostFlow(num int, step *isucandar.BenchmarkStep) fl
 						lendings = append(lendings, &body)
 
 						for _, book := range books {
-							if body.BookID == book.ID && body.MemberID == member.ID &&
+							if body.BookID == book.ID && body.MemberID == memberID &&
 								body.BookTitle == book.Title && body.MemberName == member.Name {
 								return nil
 							}
