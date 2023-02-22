@@ -15,6 +15,7 @@ type MemberRepository interface {
 	GetMemberByID(id string) (*model.MemberWithLending, error)
 	GetRandomMember() *model.MemberWithLending
 	AddMembers(members []*model.MemberWithLending)
+	DeleteMember(id string)
 }
 
 var _ MemberRepository = &Repository{}
@@ -81,5 +82,18 @@ func (r *Repository) AddMembers(members []*model.MemberWithLending) {
 	for _, m := range members {
 		r.memberMap[m.ID] = m
 		r.inactiveMemberID = append(r.inactiveMemberID, m.ID)
+	}
+}
+
+func (r *Repository) DeleteMember(id string) {
+	r.mLock.Lock()
+	defer r.mLock.Unlock()
+
+	delete(r.memberMap, id)
+	for i, m := range r.memberSlice {
+		if m.ID == id {
+			r.memberSlice = append(r.memberSlice[:i], r.memberSlice[i+1:]...)
+			return
+		}
 	}
 }

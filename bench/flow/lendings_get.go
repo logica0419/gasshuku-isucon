@@ -78,6 +78,8 @@ func (c *Controller) getLendingsFlow(step *isucandar.BenchmarkStep) flow {
 					step.AddError(fmt.Errorf("DELETE /api/members/%s: %w", id, err))
 					return err
 				}
+
+				c.mr.DeleteMember(id)
 				return nil
 			})
 		}

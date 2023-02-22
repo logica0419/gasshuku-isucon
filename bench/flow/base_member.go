@@ -20,14 +20,26 @@ func (c *Controller) baseMemberFlow(memberID string, step *isucandar.BenchmarkSt
 		default:
 		}
 
+		member, err := c.mr.GetMemberByID(memberID)
+		if err != nil {
+			timer := time.After(memberFlowCycle)
+			select {
+			case <-ctx.Done():
+			case <-timer:
+				return
+			}
+		}
+
 		timer := time.After(memberFlowCycle)
 
-		runner := utils.WeightedSelect(
-			[]utils.Choice[flow]{
-				{Val: c.searchBooksFlow(step)},
-				{Val: c.lendingsPostFlow(int(c.activeMemWorkerCount*2), step), Weight: 3},
-			},
-		)
+		choices := []utils.Choice[flow]{
+			{Val: c.searchBooksFlow(step)},
+			{Val: c.lendingsPostFlow(int(c.activeMemWorkerCount*2), step)},
+		}
+		if member.Lending {
+		}
+
+		runner := utils.WeightedSelect(choices)
 		runner(ctx)
 
 		select {
