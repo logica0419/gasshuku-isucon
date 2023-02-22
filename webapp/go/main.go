@@ -815,6 +815,12 @@ type PostLendingsRequest struct {
 	MemberID string   `json:"member_id"`
 }
 
+type PostLendingsResponse struct {
+	Lending
+	MemberName string `json:"member_name"`
+	BookTitle  string `json:"book_title"`
+}
+
 // 本を貸し出し
 func postLendingsHandler(c echo.Context) error {
 	var req PostLendingsRequest
@@ -837,7 +843,8 @@ func postLendingsHandler(c echo.Context) error {
 	}()
 
 	// 会員の存在確認
-	err = tx.GetContext(c.Request().Context(), &Member{}, "SELECT * FROM `member` WHERE `id` = ?", req.MemberID)
+	var member Member
+	err = tx.GetContext(c.Request().Context(), &member, "SELECT * FROM `member` WHERE `id` = ?", req.MemberID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, err.Error())
@@ -848,11 +855,12 @@ func postLendingsHandler(c echo.Context) error {
 
 	lendingTime := time.Now()
 	due := lendingTime.Add(LendingPeriod * time.Millisecond)
-	res := make([]Lending, len(req.BookIDs))
+	res := make([]PostLendingsResponse, len(req.BookIDs))
 
 	for i, bookID := range req.BookIDs {
 		// 蔵書の存在確認
-		err = tx.GetContext(c.Request().Context(), &Book{}, "SELECT * FROM `book` WHERE `id` = ?", bookID)
+		var book Book
+		err = tx.GetContext(c.Request().Context(), &book, "SELECT * FROM `book` WHERE `id` = ?", bookID)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				return echo.NewHTTPError(http.StatusNotFound, err.Error())
@@ -884,6 +892,9 @@ func postLendingsHandler(c echo.Context) error {
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
+
+		res[i].MemberName = member.Name
+		res[i].BookTitle = book.Title
 	}
 
 	_ = tx.Commit()
@@ -914,7 +925,7 @@ func getLendingsHandler(c echo.Context) error {
 	query := "SELECT * FROM `lending`"
 	args := []any{}
 	if overDue == "true" {
-		query += " WHERE `due` < ?"
+		query += " WHERE `due` > ?"
 		args = append(args, time.Now())
 	}
 
