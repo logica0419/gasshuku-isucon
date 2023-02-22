@@ -9,6 +9,8 @@ import (
 type MemberRepository interface {
 	GetInactiveMemberID(num int) ([]string, error)
 
+	GetNotLendingMember() (*model.MemberWithLending, error)
+
 	GetMemberTotal() int
 	GetMemberByID(id string) (*model.MemberWithLending, error)
 	GetRandomMember() *model.MemberWithLending
@@ -28,6 +30,21 @@ func (r *Repository) GetInactiveMemberID(num int) ([]string, error) {
 	mem := r.inactiveMemberID[:num]
 	r.inactiveMemberID = r.inactiveMemberID[num:]
 	return mem, nil
+}
+
+func (r *Repository) GetNotLendingMember() (*model.MemberWithLending, error) {
+	r.mLock.RLock()
+	defer r.mLock.RUnlock()
+
+	startIndex := rand.Intn(len(r.memberSlice))
+	slice := append(r.memberSlice[startIndex:], r.memberSlice[:startIndex]...)
+
+	for _, m := range slice {
+		if !m.Lending {
+			return m, nil
+		}
+	}
+	return nil, ErrNotFound
 }
 
 func (r *Repository) GetMemberTotal() int {
