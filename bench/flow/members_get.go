@@ -25,27 +25,27 @@ func (c *Controller) getMembersFlow(memberID string, step *isucandar.BenchmarkSt
 		}
 	}
 
+	page := 1
+	lastMemberID := ""
+	order := utils.WeightedSelect(
+		[]utils.Choice[string]{
+			{Val: "", Weight: 2},
+			{Val: "name_asc"},
+			{Val: "name_desc"},
+		},
+	)
+
+	idxFunc := func(v model.Member) string { return v.ID }
+	ord := validator.Asc
+	switch order {
+	case "name_asc":
+		idxFunc = func(v model.Member) string { return v.Name }
+	case "name_desc":
+		idxFunc = func(v model.Member) string { return v.Name }
+		ord = validator.Desc
+	}
+
 	return func(ctx context.Context) {
-		page := 1
-		lastMemberID := ""
-		order := utils.WeightedSelect(
-			[]utils.Choice[string]{
-				{Val: "", Weight: 2},
-				{Val: "name_asc"},
-				{Val: "name_desc"},
-			},
-		)
-
-		idxFunc := func(v model.Member) string { return v.ID }
-		ord := validator.Asc
-		switch order {
-		case "name_asc":
-			idxFunc = func(v model.Member) string { return v.Name }
-		case "name_desc":
-			idxFunc = func(v model.Member) string { return v.Name }
-			ord = validator.Desc
-		}
-
 		for {
 			query := action.GetMembersQuery{
 				Page:         page,
@@ -59,7 +59,7 @@ func (c *Controller) getMembersFlow(memberID string, step *isucandar.BenchmarkSt
 				return
 			}
 
-			if !findable && res.StatusCode == http.StatusNotFound && page > 1 {
+			if res.StatusCode == http.StatusNotFound && page > 1 {
 				break
 			}
 
