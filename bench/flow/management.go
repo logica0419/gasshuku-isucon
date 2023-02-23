@@ -20,7 +20,7 @@ func (c *Controller) StartUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 		default:
 		}
 
-		mem, err := c.mr.GetInactiveMemberID(5)
+		mem, err := c.mr.GetInactiveMemberID(10)
 		if err != nil {
 			step.AddError(failure.NewError(model.ErrCritical, err))
 			return
@@ -98,7 +98,7 @@ func (c *Controller) ScaleUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 						c.addActiveMemWorkerCount()
 					}
 					c.resetMemInCycleCount()
-					logger.Contestant.Printf("%d人の会員がアクティブになりました: 計%d人", join, c.activeMemWorkerCount)
+					logger.Admin.Printf("%d人の会員がアクティブになりました: 計%d人", join, c.activeMemWorkerCount)
 				}
 			}
 		}
