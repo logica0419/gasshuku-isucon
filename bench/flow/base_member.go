@@ -43,8 +43,7 @@ func (c *Controller) baseMemberFlow(memberID string, step *isucandar.BenchmarkSt
 			})
 		} else {
 			choices = append(choices, utils.Choice[flow]{
-				Val:    c.postLendingFlow(memberID, int(c.activeMemWorkerCount*2), step),
-				Weight: 2,
+				Val: c.postLendingFlow(memberID, int(c.activeMemWorkerCount*2), step),
 			})
 		}
 
