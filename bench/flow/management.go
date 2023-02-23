@@ -20,7 +20,7 @@ func (c *Controller) StartUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 		default:
 		}
 
-		mem, err := c.mr.GetInactiveMemberID(10)
+		mem, err := c.mr.GetInactiveMemberID(5)
 		if err != nil {
 			step.AddError(failure.NewError(model.ErrCritical, err))
 			return
@@ -43,6 +43,8 @@ const checkerCycle = 10 * time.Millisecond
 
 // ワーカーの追加ワーカー
 func (c *Controller) ScaleUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
+	timeout := false
+
 	return func(ctx context.Context, _ int) {
 		baseTicker := time.NewTicker(checkerCycle)
 		memberTicker := time.NewTicker(memberFlowCycle)
@@ -58,19 +60,34 @@ func (c *Controller) ScaleUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 				c.resetLibInCycleCount()
 
 			case <-baseTicker.C:
-				// 図書館職員フローが時間内に4/5終了かつ会員フローが時間内に1/5終了したら、図書館職員フローを追加
-				if c.libInCycleCount > c.activeLibWorkerCount*4/5 && c.memInCycleCount > c.activeMemWorkerCount/5 {
+				// 一度でもタイムアウトが発生していたら、スケールアップしない
+				if timeout {
+					break
+				} else {
+					for _, err := range step.Result().Errors.All() {
+						if model.IsErrTimeout(err) {
+							timeout = true
+						}
+					}
+					if timeout {
+						break
+					}
+				}
+
+				// 図書館職員フローが時間内に9/10終了かつ会員フローが時間内に1/5終了したら、図書館職員フローを追加
+				if c.libInCycleCount > c.activeLibWorkerCount*9/10 && c.memInCycleCount > c.activeMemWorkerCount/5 {
 					join := int(c.activeLibWorkerCount / 5)
 					for i := 0; i < join; i++ {
 						w := c.baseLibraryFlow(step)
 						c.wc <- w
 						c.addActiveLibWorkerCount()
 					}
+					c.resetLibInCycleCount()
 					logger.Contestant.Printf("%d人の図書館職員が採用されました: 計%d", join, c.activeLibWorkerCount)
 				}
 
-				// 会員フローが時間内に4/5終了かつ図書館職員フローが時間内に1/5終了したら、会員フローを追加
-				if c.memInCycleCount > c.activeMemWorkerCount*4/5 && c.libInCycleCount > c.activeLibWorkerCount/5 {
+				// 会員フローが時間内に9/10終了かつ図書館職員フローが時間内に1/5終了したら、会員フローを追加
+				if c.memInCycleCount > c.activeMemWorkerCount*9/5 && c.libInCycleCount > c.activeLibWorkerCount/5 {
 					join := int(c.activeMemWorkerCount / 5)
 					mem, err := c.mr.GetInactiveMemberID(join)
 					if err != nil {
@@ -87,6 +104,7 @@ func (c *Controller) ScaleUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 						c.wc <- w
 						c.addActiveMemWorkerCount()
 					}
+					c.resetMemInCycleCount()
 					logger.Contestant.Printf("%d人の会員がアクティブになりました: 計%d人", join, c.activeMemWorkerCount)
 				}
 			}
