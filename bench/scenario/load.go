@@ -20,22 +20,34 @@ func (s *Scenario) Load(ctx context.Context, step *isucandar.BenchmarkStep) erro
 	}
 	go stw.Process(ctx)
 
-	scw, err := worker.NewWorker(s.fc.ScaleUpFlow(step), worker.WithInfinityLoop(), worker.WithMaxParallelism(1))
+	scw, err := worker.NewWorker(s.fc.ScalingFlow(step), worker.WithInfinityLoop(), worker.WithMaxParallelism(1))
 	if err != nil {
 		return err
 	}
 	go scw.Process(ctx)
 
+	cancelFuncs := []context.CancelFunc{}
+
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
+
 		case wf := <-s.wc:
 			nw, err := worker.NewWorker(wf, worker.WithInfinityLoop(), worker.WithMaxParallelism(1))
 			if err != nil {
 				return err
 			}
+			ctx, cancel := context.WithCancel(ctx)
+			cancelFuncs = append(cancelFuncs, cancel)
 			go nw.Process(ctx)
+
+		case <-s.sc:
+			if len(cancelFuncs) == 0 {
+				continue
+			}
+			cancelFuncs[len(cancelFuncs)-1]()
+			cancelFuncs = cancelFuncs[:len(cancelFuncs)-1]
 		}
 	}
 }

@@ -42,8 +42,8 @@ func (c *Controller) StartUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 const checkerCycle = 10 * time.Millisecond
 
 // ワーカーの追加ワーカー
-func (c *Controller) ScaleUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
-	timeout := false
+func (c *Controller) ScalingFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
+	prevTimeoutCount := 0
 
 	return func(ctx context.Context, _ int) {
 		baseTicker := time.NewTicker(checkerCycle)
@@ -60,18 +60,25 @@ func (c *Controller) ScaleUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 				c.resetLibInCycleCount()
 
 			case <-baseTicker.C:
-				// 一度でもタイムアウトが発生していたら、スケールアップしない
-				if timeout {
+				// タイムアウトが発生していたら、スケールダウン
+				timeoutCount := 0
+				for _, err := range step.Result().Errors.All() {
+					if model.IsErrTimeout(err) {
+						timeoutCount++
+					}
+				}
+				if timeoutCount > prevTimeoutCount {
+					prevTimeoutCount = timeoutCount
+					switch c.addedWorkerHistory[len(c.addedWorkerHistory)-1] {
+					case "lib":
+						c.decActiveLibWorkerCount()
+						logger.Admin.Print("タイムアウトが発生したため、図書館職員ワーカーを1つ停止しました")
+					case "mem":
+						c.decActiveMemWorkerCount()
+						logger.Admin.Print("タイムアウトが発生したため、会員ワーカーを1つ停止しました")
+					}
+					c.sc <- struct{}{}
 					break
-				} else {
-					for _, err := range step.Result().Errors.All() {
-						if model.IsErrTimeout(err) {
-							timeout = true
-						}
-					}
-					if timeout {
-						break
-					}
 				}
 
 				// 図書館職員フローが時間内に9/10終了かつ会員フローが時間内に1/5終了したら、図書館職員フローを追加
@@ -83,7 +90,7 @@ func (c *Controller) ScaleUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 						c.addActiveLibWorkerCount()
 					}
 					c.resetLibInCycleCount()
-					logger.Contestant.Printf("%d人の図書館職員が採用されました: 計%d", join, c.activeLibWorkerCount)
+					logger.Contestant.Printf("追加で%d個の図書館職員ワーカーが開始されました", join)
 				}
 
 				// 会員フローが時間内に9/10終了かつ図書館職員フローが時間内に1/5終了したら、会員フローを追加
@@ -97,7 +104,6 @@ func (c *Controller) ScaleUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 							step.AddError(failure.NewError(model.ErrCritical, err))
 							return
 						}
-						logger.Contestant.Printf("%d人の会員が新規に登録しました", join)
 					}
 					for _, id := range mem {
 						w := c.baseMemberFlow(id, step)
@@ -105,7 +111,7 @@ func (c *Controller) ScaleUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 						c.addActiveMemWorkerCount()
 					}
 					c.resetMemInCycleCount()
-					logger.Admin.Printf("%d人の会員がアクティブになりました: 計%d人", join, c.activeMemWorkerCount)
+					logger.Admin.Printf("追加で%d個の会員ワーカーが開始されました", join)
 				}
 			}
 		}

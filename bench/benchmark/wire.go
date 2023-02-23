@@ -13,7 +13,7 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/scenario"
 )
 
-func NewBenchmark(c chan worker.WorkerFunc) (*Benchmark, error) {
+func NewBenchmark(wc chan worker.WorkerFunc, sc chan struct{}) (*Benchmark, error) {
 	wire.Build(
 		config.NewConfig,
 

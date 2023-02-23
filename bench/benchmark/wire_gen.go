@@ -17,7 +17,7 @@ import (
 
 // Injectors from wire.go:
 
-func NewBenchmark(c chan worker.WorkerFunc) (*Benchmark, error) {
+func NewBenchmark(wc chan worker.WorkerFunc, sc chan struct{}) (*Benchmark, error) {
 	configConfig, err := config.NewConfig()
 	if err != nil {
 		return nil, err
@@ -30,11 +30,11 @@ func NewBenchmark(c chan worker.WorkerFunc) (*Benchmark, error) {
 	if err != nil {
 		return nil, err
 	}
-	flowController, err := flow.NewController(c, controller, controller, controller, controller, repositoryRepository, repositoryRepository, repositoryRepository)
+	flowController, err := flow.NewController(wc, sc, controller, controller, controller, controller, repositoryRepository, repositoryRepository, repositoryRepository)
 	if err != nil {
 		return nil, err
 	}
-	scenarioScenario := scenario.NewScenario(c, flowController)
+	scenarioScenario := scenario.NewScenario(wc, sc, flowController)
 	benchmark, err := newBenchmark(configConfig, scenarioScenario)
 	if err != nil {
 		return nil, err

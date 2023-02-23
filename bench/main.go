@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	b, err := benchmark.NewBenchmark(make(chan worker.WorkerFunc, 100))
+	b, err := benchmark.NewBenchmark(make(chan worker.WorkerFunc, 100), make(chan struct{}, 10))
 	if err != nil {
 		logger.Admin.Panic(err)
 	}
