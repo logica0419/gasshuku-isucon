@@ -43,7 +43,7 @@ const checkerCycle = 10 * time.Millisecond
 
 // ワーカーの追加ワーカー
 func (c *Controller) ScaleUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
-	var prevErrCount int64 = 0
+	timeout := false
 
 	return func(ctx context.Context, _ int) {
 		baseTicker := time.NewTicker(checkerCycle)
@@ -60,11 +60,18 @@ func (c *Controller) ScaleUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 				c.resetLibInCycleCount()
 
 			case <-baseTicker.C:
-				// 前のサイクルでタイムアウトエラーが発生していたら、、スケールアップしない
-				errCount := step.Result().Errors.Count()[string(model.ErrTimeout)]
-				if prevErrCount < errCount {
-					prevErrCount = errCount
-					continue
+				// 一度でもタイムアウトが発生していたら、スケールアップしない
+				if timeout {
+					break
+				} else {
+					for _, err := range step.Result().Errors.All() {
+						if model.IsErrTimeout(err) {
+							timeout = true
+						}
+					}
+					if timeout {
+						break
+					}
 				}
 
 				// 図書館職員フローが時間内に9/10終了かつ会員フローが時間内に1/5終了したら、図書館職員フローを追加
