@@ -73,6 +73,13 @@ func (r *Repository) AddLendings(lendings []*model.LendingWithNames) {
 }
 
 func (r *Repository) DeleteLendings(memberID string) {
+	r.lLock.RLock()
+	if _, ok := r.memberMap[memberID]; !ok {
+		r.lLock.RUnlock()
+		return
+	}
+	r.lLock.RUnlock()
+
 	r.lLock.Lock()
 	r.mLock.Lock()
 	r.bLock.Lock()
