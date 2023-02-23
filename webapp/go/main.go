@@ -514,6 +514,11 @@ func banMemberHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
+	_, err = tx.ExecContext(c.Request().Context(), "DELETE FROM `lending` WHERE `member_id` = ?", id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
 	_ = tx.Commit()
 
 	return c.NoContent(http.StatusNoContent)
