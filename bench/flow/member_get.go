@@ -37,6 +37,10 @@ func (c *Controller) getMemberFlow(memberID string, encrypt bool, step *isucanda
 			return
 		}
 
+		if res.StatusCode == http.StatusNotFound {
+			return
+		}
+
 		if findable {
 			err = validator.Validate(res,
 				validator.WithStatusCode(http.StatusOK),

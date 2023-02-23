@@ -74,6 +74,10 @@ func (c *Controller) getLendingsFlow(step *isucandar.BenchmarkStep) flow {
 					return err
 				}
 
+				if res.StatusCode == http.StatusNotFound {
+					return nil
+				}
+
 				err = validator.Validate(res,
 					validator.WithStatusCode(http.StatusNoContent),
 				)

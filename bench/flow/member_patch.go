@@ -29,6 +29,10 @@ func (c *Controller) patchMemberFlow(memberID string, step *isucandar.BenchmarkS
 			req.PhoneNumber = model.NewMemberPhoneNumber()
 		}
 
+		if _, err := c.mr.GetMemberByID(memberID); err != nil {
+			return
+		}
+
 		res, err := c.ma.PatchMember(ctx, memberID, req)
 		if err != nil {
 			step.AddError(fmt.Errorf("PATCH /api/members/%s: %w", memberID, err))

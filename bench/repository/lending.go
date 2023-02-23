@@ -34,6 +34,13 @@ func (r *Repository) GetLendingsByMemberID(id string) ([]*model.LendingWithNames
 }
 
 func (r *Repository) AddLendings(lendings []*model.LendingWithNames) {
+	r.lLock.RLock()
+	if _, ok := r.memberMap[lendings[0].MemberID]; !ok {
+		r.lLock.RUnlock()
+		return
+	}
+	r.lLock.RUnlock()
+
 	r.lLock.Lock()
 	r.mLock.Lock()
 	r.bLock.Lock()
