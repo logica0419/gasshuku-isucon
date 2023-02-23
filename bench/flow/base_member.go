@@ -22,9 +22,12 @@ func (c *Controller) baseMemberFlow(memberID string, step *isucandar.BenchmarkSt
 
 		member, err := c.mr.GetMemberByID(memberID)
 		if err != nil {
+			c.addMemInCycleCount()
+
 			timer := time.After(memberFlowCycle)
 			select {
 			case <-ctx.Done():
+				return
 			case <-timer:
 				return
 			}
