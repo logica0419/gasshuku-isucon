@@ -43,7 +43,7 @@ func (c *Controller) patchMemberFlow(memberID string, step *isucandar.BenchmarkS
 			return
 		}
 
-		c.mr.UpdateMember(memberID, repository.MemberUpdateQuery(req))
+		_ = c.mr.UpdateMember(memberID, repository.MemberUpdateQuery(req))
 
 		step.AddScore(grader.ScoreUpdateMember)
 	}

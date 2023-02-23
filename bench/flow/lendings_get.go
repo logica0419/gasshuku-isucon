@@ -41,9 +41,9 @@ func (c *Controller) getLendingsFlow(step *isucandar.BenchmarkStep) flow {
 								exist = true
 								break
 							}
-							if !exist {
-								banUserIDs = append(banUserIDs, body.MemberID)
-							}
+						}
+						if !exist {
+							banUserIDs = append(banUserIDs, body.MemberID)
 						}
 					}
 
