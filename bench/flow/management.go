@@ -41,7 +41,7 @@ func (c *Controller) StartUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 
 const checkerCycle = 10 * time.Millisecond
 
-// ワーカーの追加ワーカー
+// ワーカーの追加 / 停止ワーカー
 func (c *Controller) ScalingFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
 	prevTimeoutCount := 0
 
