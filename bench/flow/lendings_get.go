@@ -87,6 +87,7 @@ func (c *Controller) getLendingsFlow(step *isucandar.BenchmarkStep) flow {
 				}
 
 				c.mr.DeleteMember(id)
+				c.decActiveMemWorkerCount()
 
 				step.AddScore(grader.ScoreBanMember)
 				return nil
