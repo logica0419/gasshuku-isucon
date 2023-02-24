@@ -33,6 +33,7 @@ func (c *Controller) getLendingsFlow(step *isucandar.BenchmarkStep) flow {
 			validator.WithStatusCode(http.StatusOK),
 			validator.WithContentType("application/json"),
 			validator.WithSliceJsonValidation(
+				validator.SliceJsonCheckOrder(func(v model.LendingWithNames) string { return v.ID }, validator.Asc),
 				validator.SliceJsonCheckEach(func(body model.LendingWithNames) error {
 					if body.Due.Add(banPeriod * time.Millisecond).Before(now) {
 						exist := false

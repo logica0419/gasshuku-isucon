@@ -72,6 +72,7 @@ func (c *Controller) searchBooksFlow(step *isucandar.BenchmarkStep) flow {
 				validator.WithJsonValidation(
 					validator.JsonSliceFieldValidate[action.GetBooksResponse]("Books",
 						validator.SliceJsonLengthRange[model.BookWithLending](1, bookPageLimit),
+						validator.SliceJsonCheckOrder(func(v model.BookWithLending) string { return v.ID }, validator.Asc),
 						validator.SliceJsonCheckEach(func(body model.BookWithLending) error {
 							if body.ID == book.ID {
 								found = true
