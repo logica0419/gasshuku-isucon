@@ -87,35 +87,29 @@ func (c *Controller) ScalingFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 
 				// 図書館職員フローが時間内に9/10終了かつ会員フローが時間内に1/5終了したら、図書館職員フローを追加
 				if c.libInCycleCount > c.activeLibWorkerCount*9/10 && c.memInCycleCount > c.activeMemWorkerCount/5 {
-					join := int(c.activeLibWorkerCount/5) + 1
-					for i := 0; i < join; i++ {
-						w := c.baseLibraryFlow(step)
-						c.wc <- w
-						c.addActiveLibWorkerCount()
-					}
+					w := c.baseLibraryFlow(step)
+					c.wc <- w
+					c.addActiveLibWorkerCount()
 					c.resetLibInCycleCount()
-					logger.Contestant.Printf("追加で%d個の図書館職員ワーカーが開始されました", join)
+					logger.Contestant.Printf("追加で1個の図書館職員ワーカーが開始されました")
 				}
 
 				// 会員フローが時間内に9/10終了かつ図書館職員フローが時間内に1/5終了したら、会員フローを追加
 				if c.memInCycleCount > c.activeMemWorkerCount*9/5 && c.libInCycleCount > c.activeLibWorkerCount/5 {
-					join := int(c.activeMemWorkerCount/5) + 1
-					mem, err := c.mr.GetInactiveMemberID(join)
+					mem, err := c.mr.GetInactiveMemberID(1)
 					if err != nil {
-						c.postMemberFlow(join, step)(ctx)
-						mem, err = c.mr.GetInactiveMemberID(join)
+						c.postMemberFlow(1, step)(ctx)
+						mem, err = c.mr.GetInactiveMemberID(1)
 						if err != nil {
 							step.AddError(failure.NewError(model.ErrCritical, err))
 							return
 						}
 					}
-					for _, id := range mem {
-						w := c.baseMemberFlow(id, step)
-						c.wc <- w
-						c.addActiveMemWorkerCount()
-					}
+					w := c.baseMemberFlow(mem[0], step)
+					c.wc <- w
+					c.addActiveMemWorkerCount()
 					c.resetMemInCycleCount()
-					logger.Admin.Printf("追加で%d個の会員ワーカーが開始されました", join)
+					logger.Admin.Printf("追加で1個の会員ワーカーが開始されました")
 				}
 			}
 		}
