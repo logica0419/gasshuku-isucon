@@ -39,6 +39,10 @@ func (c *Controller) patchMemberFlow(memberID string, step *isucandar.BenchmarkS
 			return
 		}
 
+		if res.StatusCode != http.StatusNotFound {
+			return
+		}
+
 		err = validator.Validate(res,
 			validator.WithStatusCode(http.StatusNoContent),
 		)
