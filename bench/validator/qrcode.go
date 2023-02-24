@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	qrCodeSize         = 45
+	qrCodeSize         = 49
 	errCorrectionLevel = "M"
 )
 
