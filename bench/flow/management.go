@@ -44,10 +44,7 @@ func (c *Controller) StartUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 	}
 }
 
-const (
-	checkerCycle     = 10 * time.Millisecond
-	timeoutThreshold = 10
-)
+const checkerCycle = 10 * time.Millisecond
 
 // ワーカーの追加 / 停止ワーカー
 func (c *Controller) ScalingFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
@@ -86,9 +83,6 @@ func (c *Controller) ScalingFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 						logger.Contestant.Print("タイムアウトが発生したため、会員ワーカーを1つ停止しました")
 					}
 					c.sc <- struct{}{}
-				}
-				if timeoutCount > timeoutThreshold {
-					break
 				}
 
 				// 図書館職員フローが時間内に9/10終了かつ会員フローが時間内に1/5終了したら、図書館職員フローを追加
