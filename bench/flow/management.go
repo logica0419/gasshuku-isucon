@@ -80,10 +80,10 @@ func (c *Controller) ScalingFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 					switch c.addedWorkerHistory[len(c.addedWorkerHistory)-1] {
 					case "lib":
 						c.decActiveLibWorkerCount()
-						logger.Admin.Print("タイムアウトが発生したため、図書館職員ワーカーを1つ停止しました")
+						logger.Contestant.Print("タイムアウトが発生したため、図書館職員ワーカーを1つ停止しました")
 					case "mem":
 						c.decActiveMemWorkerCount()
-						logger.Admin.Print("タイムアウトが発生したため、会員ワーカーを1つ停止しました")
+						logger.Contestant.Print("タイムアウトが発生したため、会員ワーカーを1つ停止しました")
 					}
 					c.sc <- struct{}{}
 				}
