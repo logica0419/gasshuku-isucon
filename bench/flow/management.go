@@ -11,6 +11,11 @@ import (
 	"github.com/logica0419/gasshuku-isucon/bench/model"
 )
 
+const (
+	initialLibWirer  = 5
+	initialMemWorker = 10
+)
+
 // ワーカーの初期起動用ワーカー
 func (c *Controller) StartUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
 	return func(ctx context.Context, _ int) {
@@ -20,7 +25,13 @@ func (c *Controller) StartUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 		default:
 		}
 
-		mem, err := c.mr.GetInactiveMemberID(10)
+		for i := 0; i < initialLibWirer; i++ {
+			w := c.baseLibraryFlow(step)
+			c.wc <- w
+			c.addActiveLibWorkerCount()
+		}
+
+		mem, err := c.mr.GetInactiveMemberID(initialMemWorker)
 		if err != nil {
 			step.AddError(failure.NewError(model.ErrCritical, err))
 			return
@@ -30,16 +41,13 @@ func (c *Controller) StartUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 			c.wc <- w
 			c.addActiveMemWorkerCount()
 		}
-
-		for i := 0; i < 5; i++ {
-			w := c.baseLibraryFlow(step)
-			c.wc <- w
-			c.addActiveLibWorkerCount()
-		}
 	}
 }
 
-const checkerCycle = 10 * time.Millisecond
+const (
+	checkerCycle     = 10 * time.Millisecond
+	timeoutThreshold = 10
+)
 
 // ワーカーの追加 / 停止ワーカー
 func (c *Controller) ScalingFlow(step *isucandar.BenchmarkStep) worker.WorkerFunc {
@@ -67,7 +75,7 @@ func (c *Controller) ScalingFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 						timeoutCount++
 					}
 				}
-				if timeoutCount > prevTimeoutCount {
+				if timeoutCount > prevTimeoutCount && len(c.addedWorkerHistory) > initialLibWirer+initialMemWorker {
 					prevTimeoutCount = timeoutCount
 					switch c.addedWorkerHistory[len(c.addedWorkerHistory)-1] {
 					case "lib":
@@ -78,12 +86,14 @@ func (c *Controller) ScalingFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 						logger.Admin.Print("タイムアウトが発生したため、会員ワーカーを1つ停止しました")
 					}
 					c.sc <- struct{}{}
+				}
+				if timeoutCount > timeoutThreshold {
 					break
 				}
 
 				// 図書館職員フローが時間内に9/10終了かつ会員フローが時間内に1/5終了したら、図書館職員フローを追加
 				if c.libInCycleCount > c.activeLibWorkerCount*9/10 && c.memInCycleCount > c.activeMemWorkerCount/5 {
-					join := int(c.activeLibWorkerCount / 5)
+					join := int(c.activeLibWorkerCount/5) + 1
 					for i := 0; i < join; i++ {
 						w := c.baseLibraryFlow(step)
 						c.wc <- w
@@ -95,7 +105,7 @@ func (c *Controller) ScalingFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 
 				// 会員フローが時間内に9/10終了かつ図書館職員フローが時間内に1/5終了したら、会員フローを追加
 				if c.memInCycleCount > c.activeMemWorkerCount*9/5 && c.libInCycleCount > c.activeLibWorkerCount/5 {
-					join := int(c.activeMemWorkerCount / 5)
+					join := int(c.activeMemWorkerCount/5) + 1
 					mem, err := c.mr.GetInactiveMemberID(join)
 					if err != nil {
 						c.postMemberFlow(join, step)(ctx)
