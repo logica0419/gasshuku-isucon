@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"sync"
@@ -10,6 +11,7 @@ import (
 	"github.com/isucon/isucandar/failure"
 	"github.com/logica0419/gasshuku-isucon/bench/grader"
 	"github.com/logica0419/gasshuku-isucon/bench/model"
+	"github.com/logica0419/gasshuku-isucon/bench/repository"
 	"github.com/logica0419/gasshuku-isucon/bench/validator"
 )
 
@@ -23,6 +25,9 @@ func (c *Controller) returnLendingsFlow(memberID string, step *isucandar.Benchma
 		}()
 
 		lendings, err := c.lr.GetLendingsByMemberID(memberID)
+		if errors.Is(repository.ErrNotFound, err) {
+			return
+		}
 		if err != nil {
 			step.AddError(fmt.Errorf("POST /api/lendings/return: %w", failure.NewError(model.ErrCritical, err)))
 			return
