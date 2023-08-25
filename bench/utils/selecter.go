@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"math/rand"
 )
 
@@ -11,7 +12,7 @@ type Choice[V any] struct {
 }
 
 // 重み付きランダム選択
-func WeightedSelect[V any](choices []Choice[V]) V {
+func WeightedSelect[V any](choices []Choice[V]) (V, error) {
 	total := 0
 	for _, choice := range choices {
 		if choice.Weight <= 0 {
@@ -20,16 +21,20 @@ func WeightedSelect[V any](choices []Choice[V]) V {
 		total += choice.Weight
 	}
 
+	if total <= 0 {
+		return choices[0].Val, errors.New("total weight is zero")
+	}
+
 	r := rand.Intn(total)
 	for _, choice := range choices {
 		if choice.Weight <= 0 {
 			choice.Weight = 1
 		}
 		if r < choice.Weight {
-			return choice.Val
+			return choice.Val, nil
 		}
 		r -= choice.Weight
 	}
 
-	return choices[len(choices)-1].Val
+	return choices[len(choices)-1].Val, nil
 }
