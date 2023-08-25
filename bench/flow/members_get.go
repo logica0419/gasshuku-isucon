@@ -27,12 +27,12 @@ func (c *Controller) getMembersFlow(memberID string, step *isucandar.BenchmarkSt
 
 	page := 1
 	lastMemberID := ""
-	order := utils.WeightedSelect(
+	order, _ := utils.WeightedSelect(
 		[]utils.Choice[string]{
 			{Val: "", Weight: 2},
 			{Val: "name_asc"},
 			{Val: "name_desc"},
-		},
+		}, false,
 	)
 
 	idxFunc := func(v model.Member) string { return v.ID }

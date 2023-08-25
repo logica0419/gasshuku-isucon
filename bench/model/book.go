@@ -64,7 +64,7 @@ func NewBookAuthor() string {
 }
 
 func NewBookGenre() Genre {
-	return utils.WeightedSelect(
+	genre, _ := utils.WeightedSelect(
 		[]utils.Choice[Genre]{
 			{Val: General, Weight: 3},
 			{Val: Philosophy, Weight: 2},
@@ -75,8 +75,9 @@ func NewBookGenre() Genre {
 			{Val: Arts},
 			{Val: Literature},
 			{Val: Geography},
-		},
+		}, false,
 	)
+	return genre
 }
 
 func NewBookTitle() string {

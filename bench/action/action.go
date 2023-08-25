@@ -68,11 +68,13 @@ func NewController(c *config.Config) (*Controller, error) {
 }
 
 func (c *Controller) libAgent() *agent.Agent {
-	return utils.WeightedSelect(c.libAgents)
+	a, _ := utils.WeightedSelect(c.libAgents, false)
+	return a
 }
 
 func (c *Controller) searchAgent() *agent.Agent {
-	return utils.WeightedSelect(c.searchAgents)
+	a, _ := utils.WeightedSelect(c.searchAgents, false)
+	return a
 }
 
 func processErr(ctx context.Context, err error) error {
