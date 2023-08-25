@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	initialLibWirer  = 3
-	initialMemWorker = 6
+	initialLibWorker = 7
+	initialMemWorker = 9
 )
 
 // ワーカーの初期起動用ワーカー
@@ -23,7 +23,7 @@ func (c *Controller) StartUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 		default:
 		}
 
-		for i := 0; i < initialLibWirer; i++ {
+		for i := 0; i < initialLibWorker; i++ {
 			w := c.baseLibraryFlow(step)
 			c.wc <- w
 		}
