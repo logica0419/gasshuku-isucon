@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	initialLibWirer  = 5
-	initialMemWorker = 10
+	initialLibWirer  = 3
+	initialMemWorker = 6
 )
 
 // ワーカーの初期起動用ワーカー
