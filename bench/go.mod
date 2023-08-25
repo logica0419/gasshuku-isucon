@@ -11,7 +11,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/logica0419/helpisu v0.11.0
 	github.com/makiuchi-d/gozxing v0.1.1
-	github.com/mattn/go-gimei v0.0.3
+	github.com/mattn/go-gimei v0.0.4
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.15.0
