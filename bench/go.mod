@@ -3,7 +3,7 @@ module github.com/logica0419/gasshuku-isucon/bench
 go 1.20
 
 require (
-	github.com/bytedance/sonic v1.8.1
+	github.com/bytedance/sonic v1.10.0
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/google/wire v0.5.0
 	github.com/icrowley/fake v0.0.0-20221112152111-d7b7e2276db2
@@ -20,7 +20,8 @@ require (
 )
 
 require (
-	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
+	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
+	github.com/chenzhuoyu/iasm v0.9.0 // indirect
 	github.com/corpix/uarand v0.2.0 // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
