@@ -669,11 +669,11 @@ func getBooksHandler(c echo.Context) error {
 		args = append(args, genre)
 	}
 	if title != "" {
-		query += "title LIKE ? AND "
+		query += "title COLLATE utf8mb4_bin LIKE ? AND "
 		args = append(args, "%"+title+"%")
 	}
 	if author != "" {
-		query += "author LIKE ? AND "
+		query += "author COLLATE utf8mb4_bin LIKE ? AND "
 		args = append(args, "%"+author+"%")
 	}
 	query = strings.TrimSuffix(query, "AND ")
