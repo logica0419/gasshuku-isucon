@@ -22,15 +22,10 @@ run-go:
 run-bench:
 	cd bench && go run main.go >/dev/null
 
-.PHONY: deploy-bench
-deploy-bench:
-	cd bench && go build -o bench main.go
-	scp bench/bench ubuntu@${BENCH_IP}:/home/ubuntu/piscon-portal
-	ssh ubuntu@${BENCH_IP} "cd /home/ubuntu/piscon-portal; make deploy"
-
 .PHONY: run-generator
-run-generator: init-db
-	touch bench/repository/init_data.json
+run-generator:
+	touch bench/repository/init_data.json webapp/sql/1_data.sql
+	@make init-db
 	cd bench/repository/generator && go run *.go
 	@make dump-data
 

@@ -1,7 +1,7 @@
-FROM golang:1.20.7
+FROM golang:1.21.0
 
 RUN apt-get update && \
-  apt-get install -y --no-install-recommends mariadb-client-core-10.5 qrencode && \
+  apt-get install -y --no-install-recommends mariadb-client-core qrencode && \
   apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /webapp/go
@@ -9,4 +9,5 @@ COPY ../webapp/go/go.* /webapp/go/
 RUN go mod download
 
 COPY ../webapp /webapp/
+COPY ../webapp/sql /webapp/sql
 ENTRYPOINT [ "go", "run", "main.go" ]
