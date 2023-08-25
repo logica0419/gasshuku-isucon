@@ -12,7 +12,9 @@ type Choice[V any] struct {
 }
 
 // 重み付きランダム選択
-func WeightedSelect[V any](choices []Choice[V]) (V, error) {
+//
+//	decがtrueの場合、選択された選択肢の重みを1減らす
+func WeightedSelect[V any](choices []Choice[V], dec bool) (V, error) {
 	total := 0
 	for _, choice := range choices {
 		if choice.Weight <= 0 {
@@ -26,15 +28,21 @@ func WeightedSelect[V any](choices []Choice[V]) (V, error) {
 	}
 
 	r := rand.Intn(total)
-	for _, choice := range choices {
+	for i, choice := range choices {
 		if choice.Weight <= 0 {
 			choice.Weight = 1
 		}
 		if r < choice.Weight {
+			if dec {
+				choices[i].Weight--
+			}
 			return choice.Val, nil
 		}
 		r -= choice.Weight
 	}
 
+	if dec {
+		choices[len(choices)-1].Weight--
+	}
 	return choices[len(choices)-1].Val, nil
 }
