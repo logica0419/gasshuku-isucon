@@ -1,4 +1,4 @@
-FROM golang:1.21rc3
+FROM golang:1.20.7
 
 RUN apt-get update && \
   apt-get install -y --no-install-recommends mariadb-client-core-10.5 qrencode && \
