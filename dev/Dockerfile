@@ -9,5 +9,4 @@ COPY ../webapp/go/go.* /webapp/go/
 RUN go mod download
 
 COPY ../webapp /webapp/
-COPY ../webapp/sql /webapp/sql
 ENTRYPOINT [ "go", "run", "main.go" ]
