@@ -40,14 +40,5 @@ func (c *Controller) baseLibraryFlow(step *isucandar.BenchmarkStep) worker.Worke
 			return
 		default:
 		}
-
-		c.addLibInCycleCount()
-
-		select {
-		case <-ctx.Done():
-			return
-		case <-timer:
-			return
-		}
 	}
 }
