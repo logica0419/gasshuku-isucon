@@ -72,22 +72,6 @@ func NewController(
 	}, nil
 }
 
-func (c *Controller) addLibInCycleCount() {
-	atomic.AddUint32(&c.libInCycleCount, 1)
-}
-
-func (c *Controller) resetLibInCycleCount() {
-	atomic.StoreUint32(&c.libInCycleCount, 0)
-}
-
-func (c *Controller) addMemInCycleCount() {
-	atomic.AddUint32(&c.memInCycleCount, 1)
-}
-
-func (c *Controller) resetMemInCycleCount() {
-	atomic.StoreUint32(&c.memInCycleCount, 0)
-}
-
 func (c *Controller) addActiveMemWorkerCount() {
 	c.historyLock.Lock()
 	defer c.historyLock.Unlock()

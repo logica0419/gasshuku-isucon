@@ -2,7 +2,6 @@ package utils
 
 import (
 	"math/rand"
-	"time"
 )
 
 var (
@@ -11,7 +10,6 @@ var (
 )
 
 func init() {
-	rand.Seed(time.Now().UnixNano())
 	initializeCharCode()
 	initializeCharCodeWithSign()
 }

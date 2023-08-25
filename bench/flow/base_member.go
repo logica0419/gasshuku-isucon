@@ -64,14 +64,5 @@ func (c *Controller) baseMemberFlow(memberID string, step *isucandar.BenchmarkSt
 			return
 		default:
 		}
-
-		c.addMemInCycleCount()
-
-		select {
-		case <-ctx.Done():
-			return
-		case <-timer:
-			return
-		}
 	}
 }
