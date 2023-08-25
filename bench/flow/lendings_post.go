@@ -15,7 +15,7 @@ import (
 
 func (c *Controller) postLendingFlow(memberID string, num int, step *isucandar.BenchmarkStep) flow {
 	return func(ctx context.Context) {
-		member, err := c.mr.GetMemberByID(memberID)
+		_, err := c.mr.GetMemberByID(memberID)
 		if err != nil {
 			step.AddError(fmt.Errorf("GET /api/member/%s: %w", memberID, failure.NewError(model.ErrCritical, err)))
 			return
@@ -63,12 +63,11 @@ func (c *Controller) postLendingFlow(memberID string, num int, step *isucandar.B
 						lendings = append(lendings, &body)
 
 						for _, book := range books {
-							if body.BookID == book.ID && body.MemberID == memberID &&
-								body.BookTitle == book.Title && body.MemberName == member.Name {
+							if body.BookID == book.ID && body.MemberID == memberID && body.BookTitle == book.Title {
 								return nil
 							}
 						}
-						return failure.NewError(model.ErrInvalidBody, nil)
+						return failure.NewError(model.ErrInvalidBody, fmt.Errorf("invalid lending: %s", body.ID))
 					},
 				),
 			),
