@@ -6,6 +6,7 @@ import (
 
 	"github.com/isucon/isucandar"
 	"github.com/isucon/isucandar/worker"
+	"github.com/logica0419/gasshuku-isucon/bench/model"
 	"github.com/logica0419/gasshuku-isucon/bench/utils"
 )
 
@@ -20,15 +21,20 @@ func (c *Controller) baseMemberFlow(memberID string, step *isucandar.BenchmarkSt
 		default:
 		}
 
-		member, err := c.mr.GetMemberByID(memberID)
-		if err != nil {
-			timer := time.After(memberFlowCycle)
-			select {
-			case <-ctx.Done():
-				return
-			case <-timer:
+		var (
+			member *model.MemberWithLending
+			err    error
+		)
+		for i := 0; i < 10; i++ {
+			member, err = c.mr.GetMemberByID(memberID)
+			if err == nil {
+				break
+			}
+			mem, err := c.mr.GetInactiveMemberID(1)
+			if err != nil {
 				return
 			}
+			memberID = mem[0]
 		}
 
 		timer := time.After(memberFlowCycle)
