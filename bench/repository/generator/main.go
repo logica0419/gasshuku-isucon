@@ -48,40 +48,45 @@ func main() {
 
 	initData := repository.InitData{
 		Members: []*model.MemberWithLending{},
+		Books:   []*model.BookWithLending{},
 	}
 
-	members := []*model.MemberWithLending{}
-	for i := 0; i < 5000; i++ {
-		member := model.NewMember()
-		members = append(members, member)
-		time.Sleep(time.Duration((1000 + rand.Intn(1000))) * time.Microsecond)
-	}
-	_, err = tx.NamedExec(
-		"INSERT INTO member (`id`, `name`, `address`, `phone_number`, `banned`, `created_at`) "+
-			"VALUES (:id, :name, :address, :phone_number, :banned, :created_at)",
-		members,
-	)
-	if err != nil {
-		log.Panic(err)
+	for i := 0; i < 76; i++ {
+		members := []*model.MemberWithLending{}
+		for i := 0; i < 992; i++ {
+			member := model.NewMember()
+			members = append(members, member)
+			time.Sleep(time.Duration((1 + rand.Intn(100))) * time.Microsecond)
+		}
+		_, err = tx.NamedExec(
+			"INSERT INTO member (`id`, `name`, `address`, `phone_number`, `banned`, `created_at`) "+
+				"VALUES (:id, :name, :address, :phone_number, :banned, :created_at)",
+			members,
+		)
+		if err != nil {
+			log.Panic(err)
+		}
 	}
 	err = tx.Select(&initData.Members, "SELECT * FROM member")
 	if err != nil {
 		log.Panic(err)
 	}
 
-	books := []*model.BookWithLending{}
-	for i := 0; i < 10000; i++ {
-		book := model.NewBook()
-		books = append(books, book)
-		time.Sleep(time.Duration((1000 + rand.Intn(1000))) * time.Microsecond)
-	}
-	_, err = tx.NamedExec(
-		"INSERT INTO book (`id`, `title`, `author`, `genre`, `created_at`) "+
-			"VALUES (:id, :title, :author, :genre, :created_at)",
-		books,
-	)
-	if err != nil {
-		log.Panic(err)
+	for i := 0; i < 127; i++ {
+		books := []*model.BookWithLending{}
+		for i := 0; i < 866; i++ {
+			book := model.NewBook()
+			books = append(books, book)
+			time.Sleep(time.Duration((1 + rand.Intn(100))) * time.Microsecond)
+		}
+		_, err = tx.NamedExec(
+			"INSERT INTO book (`id`, `title`, `author`, `genre`, `created_at`) "+
+				"VALUES (:id, :title, :author, :genre, :created_at)",
+			books,
+		)
+		if err != nil {
+			log.Panic(err)
+		}
 	}
 	err = tx.Select(&initData.Books, "SELECT * FROM book")
 	if err != nil {
