@@ -6,6 +6,7 @@ import (
 
 	"github.com/isucon/isucandar"
 	"github.com/isucon/isucandar/worker"
+	"github.com/logica0419/gasshuku-isucon/bench/logger"
 	"github.com/logica0419/gasshuku-isucon/bench/utils"
 )
 
@@ -23,11 +24,11 @@ func (c *Controller) baseLibraryFlow(step *isucandar.BenchmarkStep) worker.Worke
 		timer := time.After(libraryFlowCycle)
 
 		choices := []utils.Choice[flow]{
-			{Val: c.getMembersFlow("", step)},
-			{Val: c.getMembersFlow(c.mr.GetRandomMember().ID, step)},
-			{Val: c.searchBooksFlow(step), Weight: 3},
-			{Val: c.postBooksFlow(2, step), Weight: 2},
-			{Val: c.getLendingsFlow(step), Weight: 4},
+			{Val: c.getMembersFlow("", step), Weight: 10},
+			{Val: c.getMembersFlow(c.mr.GetRandomMember().ID, step), Weight: 10},
+			{Val: c.searchBooksFlow(step), Weight: 30},
+			{Val: c.postBooksFlow(2, step), Weight: 20},
+			{Val: c.getLendingsFlow(step), Weight: 40},
 		}
 
 		for {
@@ -43,6 +44,8 @@ func (c *Controller) baseLibraryFlow(step *isucandar.BenchmarkStep) worker.Worke
 			default:
 			}
 		}
+
+		logger.Admin.Print("finish library cycle")
 
 		select {
 		case <-ctx.Done():

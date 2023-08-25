@@ -42,6 +42,7 @@ func NewController(c *config.Config) (*Controller, error) {
 	searchAgents := make([]utils.Choice[*agent.Agent], searchAgentsNum)
 
 	for i := 0; i < libAgentsNum; i++ {
+		libAgents[i].Weight = 1
 		libAgents[i].Val, err = agent.NewAgent(agent.WithBaseURL(c.BaseURL), agent.WithDefaultTransport(),
 			agent.WithTimeout(time.Duration(c.RequestTimeout)*time.Millisecond))
 		if err != nil {
@@ -50,6 +51,7 @@ func NewController(c *config.Config) (*Controller, error) {
 		libAgents[i].Val.Name = fmt.Sprintf("Isulibrary-LibAgent-%d", i+1)
 	}
 	for i := 0; i < searchAgentsNum; i++ {
+		searchAgents[i].Weight = 1
 		searchAgents[i].Val, err = agent.NewAgent(agent.WithBaseURL(c.BaseURL), agent.WithDefaultTransport(),
 			agent.WithTimeout(time.Duration(c.RequestTimeout)*time.Millisecond))
 		if err != nil {

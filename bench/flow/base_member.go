@@ -6,6 +6,7 @@ import (
 
 	"github.com/isucon/isucandar"
 	"github.com/isucon/isucandar/worker"
+	"github.com/logica0419/gasshuku-isucon/bench/logger"
 	"github.com/logica0419/gasshuku-isucon/bench/model"
 	"github.com/logica0419/gasshuku-isucon/bench/utils"
 )
@@ -40,17 +41,16 @@ func (c *Controller) baseMemberFlow(memberID string, step *isucandar.BenchmarkSt
 		timer := time.After(memberFlowCycle)
 
 		choices := []utils.Choice[flow]{
-			{Val: c.searchBooksFlow(step), Weight: 3},
-			{Val: c.patchMemberFlow(memberID, step)},
-		}
-		if member.Lending {
-			choices = append(choices, utils.Choice[flow]{
-				Val: c.returnLendingsFlow(memberID, step),
-			})
-		} else {
-			choices = append(choices, utils.Choice[flow]{
-				Val: c.postLendingFlow(memberID, 2, step), Weight: 3,
-			})
+			{Val: c.searchBooksFlow(step), Weight: 30},
+			{Val: c.patchMemberFlow(memberID, step), Weight: 10},
+			{Val: func(ctx context.Context) {
+				member, _ = c.mr.GetMemberByID(memberID)
+				if member.Lending {
+					c.returnLendingsFlow(memberID, step)(ctx)
+				} else {
+					c.postLendingFlow(memberID, 2, step)(ctx)
+				}
+			}, Weight: 30},
 		}
 
 		for {
@@ -72,6 +72,8 @@ func (c *Controller) baseMemberFlow(memberID string, step *isucandar.BenchmarkSt
 			default:
 			}
 		}
+
+		logger.Admin.Print("finish member cycle")
 
 		select {
 		case <-ctx.Done():

@@ -30,8 +30,8 @@ func (c *Controller) getMembersFlow(memberID string, step *isucandar.BenchmarkSt
 	order, _ := utils.WeightedSelect(
 		[]utils.Choice[string]{
 			{Val: "", Weight: 2},
-			{Val: "name_asc"},
-			{Val: "name_desc"},
+			{Val: "name_asc", Weight: 1},
+			{Val: "name_desc", Weight: 1},
 		}, false,
 	)
 

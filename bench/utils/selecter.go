@@ -17,9 +17,6 @@ type Choice[V any] struct {
 func WeightedSelect[V any](choices []Choice[V], dec bool) (V, error) {
 	total := 0
 	for _, choice := range choices {
-		if choice.Weight <= 0 {
-			choice.Weight = 1
-		}
 		total += choice.Weight
 	}
 
