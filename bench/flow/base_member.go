@@ -40,29 +40,44 @@ func (c *Controller) baseMemberFlow(memberID string, step *isucandar.BenchmarkSt
 		timer := time.After(memberFlowCycle)
 
 		choices := []utils.Choice[flow]{
-			{Val: c.searchBooksFlow(step)},
+			{Val: c.searchBooksFlow(step), Weight: 3},
 			{Val: c.patchMemberFlow(memberID, step)},
 		}
 		if member.Lending {
 			choices = append(choices, utils.Choice[flow]{
-				Val:    c.returnLendingsFlow(memberID, step),
-				Weight: 3,
+				Val: c.returnLendingsFlow(memberID, step),
 			})
 		} else {
 			choices = append(choices, utils.Choice[flow]{
-				Val: c.postLendingFlow(memberID, 2, step),
+				Val: c.postLendingFlow(memberID, 2, step), Weight: 3,
 			})
 		}
 
-		runner := utils.WeightedSelect(choices)
-		runner(ctx)
+		for {
+			// memberがBANされてしまったら、強制的にフローを終了する
+			member, err = c.mr.GetMemberByID(memberID)
+			if err != nil {
+				return
+			}
+
+			runner, err := utils.WeightedSelect(choices, true)
+			if err != nil {
+				break
+			}
+			runner(ctx)
+
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
+		}
 
 		select {
 		case <-ctx.Done():
 			return
 		case <-timer:
 			return
-		default:
 		}
 	}
 }

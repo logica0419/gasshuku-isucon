@@ -22,23 +22,33 @@ func (c *Controller) baseLibraryFlow(step *isucandar.BenchmarkStep) worker.Worke
 
 		timer := time.After(libraryFlowCycle)
 
-		runner := utils.WeightedSelect(
-			[]utils.Choice[flow]{
-				{Val: c.getMembersFlow("", step)},
-				{Val: c.getMembersFlow(c.mr.GetRandomMember().ID, step)},
-				{Val: c.searchBooksFlow(step), Weight: 3},
-				{Val: c.postBooksFlow(2, step), Weight: 2},
-				{Val: c.getLendingsFlow(step), Weight: 4},
-			},
-		)
-		runner(ctx)
+		choices := []utils.Choice[flow]{
+			{Val: c.getMembersFlow("", step)},
+			{Val: c.getMembersFlow(c.mr.GetRandomMember().ID, step)},
+			{Val: c.searchBooksFlow(step), Weight: 3},
+			{Val: c.postBooksFlow(2, step), Weight: 2},
+			{Val: c.getLendingsFlow(step), Weight: 4},
+		}
+
+		for {
+			runner, err := utils.WeightedSelect(choices, true)
+			if err != nil {
+				break
+			}
+			runner(ctx)
+
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
+		}
 
 		select {
 		case <-ctx.Done():
 			return
 		case <-timer:
 			return
-		default:
 		}
 	}
 }
