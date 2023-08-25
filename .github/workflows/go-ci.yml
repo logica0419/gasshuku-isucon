@@ -23,13 +23,10 @@ jobs:
       - name: Touch init_data.json
         if: ${{ matrix.app }} == 'bench'
         run: touch bench/repository/init_data.json
-      - name: Run golangci-lint
-        uses: reviewdog/action-golangci-lint@v2
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3.7.0
         with:
-          go_version_file: ${{ matrix.app }}/go.mod
-          workdir: ${{ matrix.app }}
-          fail_on_error: true
-          filter_mode: nofilter
+          working-directory: ${{ matrix.app }}
   build:
     name: Build
     runs-on: ubuntu-latest
