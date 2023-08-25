@@ -26,7 +26,6 @@ func (c *Controller) StartUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 		for i := 0; i < initialLibWirer; i++ {
 			w := c.baseLibraryFlow(step)
 			c.wc <- w
-			c.addActiveLibWorkerCount()
 		}
 
 		mem, err := c.mr.GetInactiveMemberID(initialMemWorker)
@@ -37,7 +36,6 @@ func (c *Controller) StartUpFlow(step *isucandar.BenchmarkStep) worker.WorkerFun
 		for _, id := range mem {
 			w := c.baseMemberFlow(id, step)
 			c.wc <- w
-			c.addActiveMemWorkerCount()
 		}
 	}
 }

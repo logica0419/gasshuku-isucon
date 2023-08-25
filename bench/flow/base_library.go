@@ -27,7 +27,7 @@ func (c *Controller) baseLibraryFlow(step *isucandar.BenchmarkStep) worker.Worke
 				{Val: c.getMembersFlow("", step)},
 				{Val: c.getMembersFlow(c.mr.GetRandomMember().ID, step)},
 				{Val: c.searchBooksFlow(step), Weight: 3},
-				{Val: c.postBooksFlow(int(c.activeLibWorkerCount)*2, step), Weight: 2},
+				{Val: c.postBooksFlow(2, step), Weight: 2},
 				{Val: c.getLendingsFlow(step), Weight: 4},
 			},
 		)
