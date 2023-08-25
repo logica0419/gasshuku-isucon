@@ -41,7 +41,7 @@ func (c *Controller) baseMemberFlow(memberID string, step *isucandar.BenchmarkSt
 		timer := time.After(memberFlowCycle)
 
 		choices := []utils.Choice[flow]{
-			{Val: c.searchBooksFlow(step), Weight: 30},
+			{Val: c.searchBooksFlow(step), Weight: 20},
 			{Val: c.patchMemberFlow(memberID, step), Weight: 10},
 			{Val: func(ctx context.Context) {
 				member, _ = c.mr.GetMemberByID(memberID)
