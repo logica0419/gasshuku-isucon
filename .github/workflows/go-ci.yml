@@ -1,0 +1,80 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app:
+          - bench
+          - webapp/go
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Touch init_data.json
+        if: ${{ matrix.app }} == 'bench'
+        run: touch bench/repository/init_data.json
+      - name: Run golangci-lint
+        uses: reviewdog/action-golangci-lint@v2
+        with:
+          go_version_file: ${{ matrix.app }}/go.mod
+          workdir: ${{ matrix.app }}
+          fail_on_error: true
+          filter_mode: nofilter
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app:
+          - bench
+          - webapp/go
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Touch init_data.json
+        if: ${{ matrix.app }} == 'bench'
+        run: touch bench/repository/init_data.json
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: ${{ matrix.app }}/go.mod
+          cache-dependency-path: ${{ matrix.app }}/go.mod/go.sum
+      - name: Mod Download
+        working-directory: ${{ matrix.app }}
+        run: go mod download
+      - name: Build
+        working-directory: ${{ matrix.app }}
+        run: go build
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app:
+          - bench
+          - webapp/go
+    needs: [build]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Touch init_data.json
+        if: ${{ matrix.app }} == 'bench'
+        run: touch bench/repository/init_data.json
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: ${{ matrix.app }}/go.mod
+          cache-dependency-path: ${{ matrix.app }}/go.mod/go.sum
+      - name: Run Test
+        working-directory: ${{ matrix.app }}
+        run: go test ./... -v
