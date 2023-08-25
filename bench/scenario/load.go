@@ -20,12 +20,6 @@ func (s *Scenario) Load(ctx context.Context, step *isucandar.BenchmarkStep) erro
 	}
 	go stw.Process(ctx)
 
-	scw, err := worker.NewWorker(s.fc.ScalingFlow(step), worker.WithInfinityLoop(), worker.WithMaxParallelism(1))
-	if err != nil {
-		return err
-	}
-	go scw.Process(ctx)
-
 	cancelFuncs := []context.CancelFunc{}
 
 	for {
