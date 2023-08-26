@@ -1,8 +1,11 @@
 # gasshuku-isucon
 
+> 「ISUCON」は、LINE株式会社の商標または登録商標です。  
+> <https://isucon.net/>
+
 traP 2023春合宿記念 オリジナルISUCON
 
-## ！！！Waiting For Contribution
+## 🙏 Waiting For Contribution 🙏
 
 ### Frontend
 
