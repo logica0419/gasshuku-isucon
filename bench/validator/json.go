@@ -2,6 +2,7 @@ package validator
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/isucon/isucandar/failure"
@@ -16,6 +17,13 @@ type JsonValidateOpt[V any] func(body V) error
 func WithJsonValidation[V any](opt ...JsonValidateOpt[V]) ValidateOpt {
 	return func(res *http.Response) error {
 		var body V
+		if res.Body != nil {
+			// ボディが残っているとHTTP keep-aliveができないので読み捨てて閉じる
+			defer func() {
+				io.Copy(io.Discard, res.Body)
+				res.Body.Close()
+			}()
+		}
 		if err := utils.DecodeJsonWithStandard(res.Body, &body); err != nil {
 			return failure.NewError(model.ErrUndecodableBody, err)
 		}
