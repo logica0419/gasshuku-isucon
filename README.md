@@ -26,7 +26,7 @@ traP 2023春合宿記念 オリジナルISUCON
 
 ## 遊び方 (08/26時点)
 
-1. 手元でもどこかのサーバーでも良いので、GoとMySQLがインストールされたLinux環境を用意する
+1. 手元でもどこかのサーバーでも良いので、Go(**1.21以上**)とMySQLがインストールされたLinux環境を用意する
    - `qrencode`コマンドが必要です。Ubuntu/Debianの場合は`sudo apt install qrencode`でインストールできます
 2. MySQLにパスワード「isucon」で「isucon」という名前のユーザーを作り、「isulibrary」という名前でデータベースを用意する
 3. リポジトリを任意の場所にクローンする
