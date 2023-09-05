@@ -17,7 +17,7 @@ jobs:
           - webapp/go
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Touch init_data.json
@@ -40,7 +40,7 @@ jobs:
           - webapp/go
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Touch init_data.json
         if: ${{ matrix.app }} == 'bench'
         run: touch bench/repository/init_data.json
@@ -66,7 +66,7 @@ jobs:
     needs: [build]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Touch init_data.json
         if: ${{ matrix.app }} == 'bench'
         run: touch bench/repository/init_data.json
