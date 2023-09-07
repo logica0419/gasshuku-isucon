@@ -10,12 +10,16 @@ import (
 	"github.com/isucon/isucandar/failure"
 	"github.com/logica0419/gasshuku-isucon/bench/action"
 	"github.com/logica0419/gasshuku-isucon/bench/grader"
+	"github.com/logica0419/gasshuku-isucon/bench/logger"
 	"github.com/logica0419/gasshuku-isucon/bench/model"
 	"github.com/logica0419/gasshuku-isucon/bench/utils"
 	"github.com/logica0419/gasshuku-isucon/bench/validator"
 )
 
-const memberPageLimit = 100
+const (
+	memberPageLimit = 100
+	pageLimit       = 100
+)
 
 func (c *Controller) getMembersFlow(memberID string, step *isucandar.BenchmarkStep) flow {
 	findable := false
@@ -47,6 +51,10 @@ func (c *Controller) getMembersFlow(memberID string, step *isucandar.BenchmarkSt
 
 	return func(ctx context.Context) {
 		for {
+			if page > pageLimit {
+				break
+			}
+
 			query := action.GetMembersQuery{
 				Page:         page,
 				LastMemberID: lastMemberID,
@@ -60,6 +68,7 @@ func (c *Controller) getMembersFlow(memberID string, step *isucandar.BenchmarkSt
 			}
 
 			if res.StatusCode == http.StatusNotFound && page > 1 {
+				logger.Admin.Printf("finish member page: %d", page)
 				break
 			}
 
