@@ -12,8 +12,8 @@
     classic: true
 
 - ansible.builtin.user:
-   name: isucon
-   shell: /bin/bash
+    name: isucon
+    shell: /bin/bash
 
 - ansible.builtin.copy:
     src: sudoers_isucon
