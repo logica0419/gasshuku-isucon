@@ -42,7 +42,7 @@ func (c *Controller) baseMemberFlow(memberID string, step *isucandar.BenchmarkSt
 
 		choices := []utils.Choice[flow]{
 			{Val: c.searchBooksFlow(step), Weight: 20},
-			{Val: c.patchMemberFlow(memberID, step), Weight: 10},
+			{Val: c.patchMemberFlow(memberID, step), Weight: 1},
 			{Val: func(ctx context.Context) {
 				member, _ = c.mr.GetMemberByID(memberID)
 				if member.Lending {
