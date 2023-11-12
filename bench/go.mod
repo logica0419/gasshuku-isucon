@@ -1,6 +1,6 @@
 module github.com/logica0419/gasshuku-isucon/bench
 
-go 1.21.0
+go 1.21.4
 
 require (
 	github.com/bytedance/sonic v1.10.2

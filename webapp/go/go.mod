@@ -1,6 +1,6 @@
 module github.com/logica0419/gasshuku-isucon/webapp/go
 
-go 1.21.0
+go 1.21.4
 
 require (
 	github.com/go-sql-driver/mysql v1.7.1
