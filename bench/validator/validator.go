@@ -15,7 +15,7 @@ func Validate(res *http.Response, opts ...ValidateOpt) error {
 	if res.Body != nil {
 		// ボディが残っているとHTTP keep-aliveができないので読み捨てて閉じる
 		defer func() {
-			io.Copy(io.Discard, res.Body)
+			_, _ = io.Copy(io.Discard, res.Body)
 			res.Body.Close()
 		}()
 	}
