@@ -30,6 +30,7 @@ jobs:
           workdir: ${{ matrix.app }}
           fail_on_error: true
           filter_mode: nofilter
+          golangci_lint_flags: --timeout=10m
   build:
     name: Build
     runs-on: ubuntu-latest
