@@ -48,7 +48,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version-file: ${{ matrix.app }}/go.mod
-          cache-dependency-path: ${{ matrix.app }}/go.mod/go.sum
+          cache-dependency-path: ${{ matrix.app }}/go.sum
       - name: Mod Download
         working-directory: ${{ matrix.app }}
         run: go mod download
@@ -74,7 +74,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version-file: ${{ matrix.app }}/go.mod
-          cache-dependency-path: ${{ matrix.app }}/go.mod/go.sum
+          cache-dependency-path: ${{ matrix.app }}/go.sum
       - name: Run Test
         working-directory: ${{ matrix.app }}
         run: go test ./... -v
