@@ -5,7 +5,7 @@ go 1.21.4
 require (
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/jmoiron/sqlx v1.3.5
-	github.com/labstack/echo/v4 v4.11.2
+	github.com/labstack/echo/v4 v4.11.3
 	github.com/oklog/ulid/v2 v2.1.0
 )
 
