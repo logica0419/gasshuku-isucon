@@ -18,9 +18,6 @@ type Controller struct {
 	key string
 	cr  *utils.Crypt
 
-	memInCycleCount uint32
-	libInCycleCount uint32
-
 	ia action.InitializeController
 	ma action.MemberController
 	ba action.BookController
