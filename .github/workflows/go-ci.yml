@@ -46,7 +46,7 @@ jobs:
         if: ${{ matrix.app }} == 'bench'
         run: touch bench/repository/init_data.json
       - name: Setup Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version-file: ${{ matrix.app }}/go.mod
           cache-dependency-path: ${{ matrix.app }}/go.sum
@@ -72,7 +72,7 @@ jobs:
         if: ${{ matrix.app }} == 'bench'
         run: touch bench/repository/init_data.json
       - name: Setup Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version-file: ${{ matrix.app }}/go.mod
           cache-dependency-path: ${{ matrix.app }}/go.sum
