@@ -5,7 +5,7 @@ go 1.21.4
 require (
 	github.com/bytedance/sonic v1.10.2
 	github.com/go-sql-driver/mysql v1.7.1
-	github.com/google/wire v0.5.0
+	github.com/google/wire v0.6.0
 	github.com/icrowley/fake v0.0.0-20221112152111-d7b7e2276db2
 	github.com/isucon/isucandar v0.0.0-20220322062028-6dd56dc57d72
 	github.com/jmoiron/sqlx v1.3.5
@@ -48,9 +48,9 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
-	golang.org/x/crypto v0.17.0 // indirect
-	golang.org/x/net v0.19.0 // indirect
-	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/crypto v0.18.0 // indirect
+	golang.org/x/net v0.20.0 // indirect
+	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
