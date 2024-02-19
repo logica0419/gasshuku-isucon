@@ -3,7 +3,7 @@ module github.com/logica0419/gasshuku-isucon/bench
 go 1.21.4
 
 require (
-	github.com/bytedance/sonic v1.10.2
+	github.com/bytedance/sonic v1.11.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/google/wire v0.6.0
 	github.com/icrowley/fake v0.0.0-20221112152111-d7b7e2276db2
