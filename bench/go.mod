@@ -4,7 +4,7 @@ go 1.21.4
 
 require (
 	github.com/bytedance/sonic v1.11.2
-	github.com/go-sql-driver/mysql v1.7.1
+	github.com/go-sql-driver/mysql v1.8.0
 	github.com/google/wire v0.6.0
 	github.com/icrowley/fake v0.0.0-20221112152111-d7b7e2276db2
 	github.com/isucon/isucandar v0.0.0-20220322062028-6dd56dc57d72
@@ -20,6 +20,7 @@ require (
 )
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
 	github.com/chenzhuoyu/iasm v0.9.0 // indirect
 	github.com/corpix/uarand v0.0.0-20170723150923-031be390f409 // indirect
