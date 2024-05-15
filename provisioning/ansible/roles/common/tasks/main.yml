@@ -1,0 +1,88 @@
+- ansible.builtin.package:
+    name:
+      - git
+      - make
+      - mysql-server
+      - qrencode
+      - sudo
+    state: present
+
+- community.general.snap:
+    name: go
+    classic: true
+
+- ansible.builtin.user:
+    name: isucon
+    shell: /bin/bash
+
+- ansible.builtin.copy:
+    src: sudoers_isucon
+    dest: /etc/sudoers.d/isucon
+    validate: /usr/sbin/visudo -csf %s
+
+- ansible.builtin.package:
+    name: mysql-server
+    state: present
+
+- ansible.builtin.service:
+    name: mysql
+    enabled: true
+    state: started
+
+- ansible.builtin.shell: |
+    mysql -e "CREATE DATABASE IF NOT EXISTS isulibrary"
+    mysql -e "CREATE USER IF NOT EXISTS isucon@localhost IDENTIFIED BY 'isucon'"
+    mysql -e "GRANT ALL ON isulibrary.* TO isucon@localhost"
+
+- ansible.builtin.git:
+    repo: "https://github.com/logica0419/gasshuku-isucon.git"
+    dest: /tmp/gasshuku-isucon
+
+- ansible.builtin.get_url:
+    url: https://github.com/logica0419/gasshuku-isucon/releases/download/initial-data/1_data.sql
+    dest: /tmp/gasshuku-isucon/webapp/sql/1_data.sql
+
+- ansible.builtin.file:
+    path: /tmp/gasshuku-isucon/webapp/sql/init_db.sh
+    mode: a+x
+
+- ansible.builtin.shell: /tmp/gasshuku-isucon/webapp/sql/init_db.sh
+
+- ansible.builtin.get_url:
+    url: https://github.com/logica0419/gasshuku-isucon/releases/download/initial-data/init_data.json
+    dest: /tmp/gasshuku-isucon/bench/repository/init_data.json
+
+- ansible.builtin.shell: |
+    /snap/bin/go build -o bench main.go
+  args:
+    chdir: /tmp/gasshuku-isucon/bench
+
+- ansible.builtin.copy:
+    src: "/tmp/gasshuku-isucon/{{ item }}"
+    dest: "/home/isucon/{{ item }}"
+    owner: isucon
+    group: isucon
+    mode: preserve
+  loop:
+    - Makefile
+    - README.md
+    - bench/
+    - webapp/
+
+- ansible.builtin.file:
+    path: /tmp/gasshuku-isucon
+    state: absent
+
+- ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
+  loop:
+    - isulibrary.service
+
+- ansible.builtin.systemd:
+    daemon_reload: true
+
+- ansible.builtin.service:
+    name: isulibrary
+    enabled: true
+    state: started

@@ -1,0 +1,12 @@
+[Unit]
+Description=Isulibrary
+
+[Service]
+Type=simple
+ExecStart=/snap/bin/go run main.go
+WorkingDirectory=/home/isucon/webapp/go
+User=isucon
+Group=isucon
+
+[Install]
+WantedBy=multi-user.target
