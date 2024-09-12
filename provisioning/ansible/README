@@ -1,0 +1,5 @@
+# ansible
+
+```
+ansible-playbook -c local -i local, site.yml
+```
